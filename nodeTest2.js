@@ -7,6 +7,7 @@
 
 
  http.createServer(function(req, res){
+ 	console.log(req.url)
 	fs.readFile('count.txt','utf-8',function(error,data){
 		res.writeHead(200,{'Content-Type':'text/plain'});
 		data = parseInt(data) + 1;

@@ -1,0 +1,16 @@
+571 error Error: read ECONNRESET
+571 error     at errnoException (net.js:878:11)
+571 error     at TCP.onread (net.js:539:19)
+572 error If you need help, you may report this log at:
+572 error     <http://github.com/isaacs/npm/issues>
+572 error or email it to:
+572 error     <npm-@googlegroups.com>
+573 error System Windows_NT 6.1.7601
+574 error command "D:\\nodejs\\\\node.exe" "D:\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "install" "mysql"
+575 error cwd E:\nodehome\nodeTest
+576 error node -v v0.10.2
+577 error npm -v 1.2.15
+578 error syscall read
+579 error code ECONNRESET
+580 error errno ECONNRESET
+581 verbose exit [ 1, true ]
