@@ -9,7 +9,7 @@ app.get('/',function(req,res) {
 	res.sendfile(__dirname+ '/index.html');
 });
 
-io.socket.on('connection',function(socket) {
+io.sockets.on('connection',function(socket) {
 	socket.emit('welcome',{text : 'OH HAI! U R CONNECTED!'});
 })
 
