@@ -6,12 +6,23 @@
 	</head>
 	<body>
 		<h1>Socket.IO Express Example</h1>
+		<form id="set-nickname">
+			<label for="nickname">Nickname:</label>
+			<input type="text" id="nickname" />
+			<input type="submit" />
+		</form>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
 			var socket = io.connect();
-			socket.on('welcome',function(data) {
-				console.log(data.text);
-			})
+			jQuery(function($){
+				var nickname = $('#nickname');
+				var setNicknameForm = $('#set-nickname');
+				setNicknameForm.submit(function(event) {
+					event.preventDefault();
+					socket.emit('nickname',nickname.val());
+				});
+			});
 		</script>
 
 	</body>
