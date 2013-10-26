@@ -3,15 +3,28 @@
 	<head>
 		<meta charset="utf-8" /> 
 		<title>Socket IO Express Example</title>
+		<style>
+			#send-message{display: none}
+			#nicknames{width: 300px; float: right;}
+			#message{width: 300px; height: 100px;}
+			#messages p strong{margin-right: 5px;}
+		</style>
 	</head>
 	<body>
 		<h1>Socket.IO Express Example</h1>
-		<ul id="online"></ul>
 		<form id="set-nickname">
 			<label for="nickname">Nickname:</label>
 			<input type="text" id="nickname" />
 			<input type="submit" />
 		</form>
+		<form id="send-message">
+			<textarea id="message"></textarea>
+			<input type="submit" />
+		</form>
+		<section id="messages">
+			<ul></ul>
+		</section>
+		<section id="messages"></section>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
@@ -19,25 +32,39 @@
 			jQuery(function($){
 				var nickname = $('#nickname');
 				var setNicknameForm = $('#set-nickname');
+				var nicknameList = $('#nicknames ul');
+				var messages = $('#messages');
+				var message = $('#message');
+				var messageForm = $('#send-message');
 				setNicknameForm.submit(function(event) {
 					event.preventDefault();
 					socket.emit('nickname',nickname.val(),function(data){
 						if(data) {
 							console.log('Nickname add success!');
 							setNicknameForm.hide();
+							messageForm.show();
 						}else{
 							setNicknameForm.prepend('<p>nickname has already exsit!</p>');
 						}
 					});
 				});
-				var online = $('#online');
+
+				messageForm.submit(function(event) {
+					event.preventDefault();
+					socket.emit('user message',message.val());
+					message.val('').focus();
+				})
 				socket.on('nicknames',function(data) {
 					var html = '';
 					for(var i=0; i<data.length; i++) {
 						html += '<li>'+data[i]+'</li>';
 					}
-					online.html(html);
-				})
+					nicknameList.empty().append(html);
+				});
+
+				socket.on('user message',function(data) {
+					messages.append('<p><strong>' + data.nick + '</strong>' + data.message + '</p>');
+				});
 			});
 		</script>
 

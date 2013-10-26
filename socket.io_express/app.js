@@ -31,6 +31,13 @@ io.sockets.on('connection',function(socket) {
 		socket.broadcast.emit('nicknames',nicknames);
 	})
 	socket.broadcast.emit('nicknames',nicknames);
+
+	socket.on('user message',function(data) {
+		io.sockets.emit('user message',{
+			nick : socket.nickname,
+			message : data
+		})
+	})
 })
 
 
