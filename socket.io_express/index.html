@@ -6,6 +6,7 @@
 	</head>
 	<body>
 		<h1>Socket.IO Express Example</h1>
+		<ul id="online"></ul>
 		<form id="set-nickname">
 			<label for="nickname">Nickname:</label>
 			<input type="text" id="nickname" />
@@ -20,8 +21,23 @@
 				var setNicknameForm = $('#set-nickname');
 				setNicknameForm.submit(function(event) {
 					event.preventDefault();
-					socket.emit('nickname',nickname.val());
+					socket.emit('nickname',nickname.val(),function(data){
+						if(data) {
+							console.log('Nickname add success!');
+							setNicknameForm.hide();
+						}else{
+							setNicknameForm.prepend('<p>nickname has already exsit!</p>');
+						}
+					});
 				});
+				var online = $('#online');
+				socket.on('nicknames',function(data) {
+					var html = '';
+					for(var i=0; i<data.length; i++) {
+						html += '<li>'+data[i]+'</li>';
+					}
+					online.html(html);
+				})
 			});
 		</script>
 

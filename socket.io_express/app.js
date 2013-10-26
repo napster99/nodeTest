@@ -10,11 +10,16 @@ app.get('/',function(req,res) {
 });
 
 io.sockets.on('connection',function(socket) {
-	socket.on('nickname',function(data) {
-		nicknames.push(data);
-		socket.nickname = data;
-		console.log('nicknames are ' +nicknames);
-
+	socket.on('nickname',function(data,callback) {
+		if(nicknames.indexOf(data) != -1) {
+			callback(false);
+		}else{
+			callback(true);
+			nicknames.push(data);
+			socket.nickname = data;
+			console.log('nicknames are ' +nicknames);
+		}
+		socket.broadcast.emit('nicknames',nicknames);
 	})
 	socket.on('disconnect',function() {
 		console.log(socket.nickname)
@@ -23,8 +28,9 @@ io.sockets.on('connection',function(socket) {
 			nicknames.splice(nicknames.indexOf(socket.nickname),1);
 		}
 		console.log('Nicknames are ' + nicknames);
+		socket.broadcast.emit('nicknames',nicknames);
 	})
-
+	socket.broadcast.emit('nicknames',nicknames);
 })
 
 
