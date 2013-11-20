@@ -1,0 +1,23 @@
+<%- include header %>
+
+<% if(locals.success) { %>
+<div class="alert alert-success">
+	<%= locals.success %>
+</div>
+<% } %>
+
+<% if(locals.error) { %>
+<div class="alert alert-error">
+	<%= locals.error %>
+</div>
+<% } %>
+
+<% if(locals.user) { %>
+
+	<%- partial('say') %>
+
+<% } %>
+
+<%-  partial('posts', {posts:posts}) %>
+
+<%- include footer %>

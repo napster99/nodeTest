@@ -1,0 +1,36 @@
+<%- include header %>
+
+<div>
+	<div style="background:#fff">
+	    <table cellspacing="0" class="table" align="center">
+	    	<thead align="center">
+	    		<tr>
+	    			<td colspan="8"><strong>WEB研发一部（前端）成员表</strong></td>
+	    		</tr>
+	    	</thead>
+	    	<tbody align="center">
+	    		<tr>
+	    			<td colspan="8"><strong>负责人：</strong>
+	    			<% for(var i=0; i<admin.length; i++) { %>
+		    			<%= admin[i]['name'] %>
+		    			<%= admin[i]['mobile'] %>
+					<% } %>
+	    			</td>
+	    		</tr>
+	    		<tr>
+	    			<td colspan="2"><strong>前端开发</strong></td>
+	    		</tr>
+	    		
+				<% for(var i=0; i<users.length; i++) { %>
+					<tr>
+		    			<td><%= users[i]['name'] %></td>
+		    			<td><%= users[i]['mobile'] %></td>
+		    		</tr>
+				<% } %>
+    		</tbody>
+	    </table>
+	</div>
+</div>
+
+
+<%- include footer %>

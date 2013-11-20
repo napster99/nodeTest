@@ -1,0 +1,43 @@
+<%- include header %>
+
+<% if(locals.success && locals.user) { %>
+<div class="alert alert-success" style="display:none;">
+	<%= locals.success %>
+</div>
+<% } %>
+
+<% if(locals.success && locals.success === '登出成功') { %>
+<div class="alert alert-success" style="display:none;">
+	<%= locals.success %>
+</div>
+<% } %>
+
+
+<% if(locals.error) { %>
+<div class="alert alert-error" style="display:none;">
+	<%= locals.error %>
+</div>
+<% } %>
+
+<% if(!locals.user) { %>
+	<div class="hero-unit">
+		<!--h1>欢迎来到边锋前端俱乐部</h1-->
+		<p>BFClub是一个基于Node.js的SNS系统。</p>
+		<p>
+			<a class="btn btn-primary btn-large" href="/login">登录</a>
+			<!-- a class="btn btn-large" href="/reg">立即注册</a -->
+		</p>
+	</div>
+<%  } else { %>
+	<% if(locals.success && !locals.user ) { %>
+	<div class="alert alert-success" style="display:none;">
+		<%= locals.success %>
+	</div>
+	<% } %>
+	<%- partial('say')  %>
+
+	
+<% } %>
+
+
+<%- include footer %>
