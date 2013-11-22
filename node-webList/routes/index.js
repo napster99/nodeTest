@@ -54,7 +54,7 @@ module.exports = function(app) {
 
 	app.post('/modifyPwd',function(req, res) {
 		var password = req.body['password'];
-		var passwordRepeat = req.body['password-repeat'];
+		var oldpassword = req.body['oldpassword'];
 
 		//检测密码长度为6~20位之间
 		if(password.length < 6 || password.length > 20) {
@@ -62,17 +62,17 @@ module.exports = function(app) {
 			return res.redirect('/modifyPwd');
 		}
 
-		//检测用户两次输入的口令是否一致
-		if(password != passwordRepeat) {
-			req.session.error = 'pwdnothesanme';
+		//生成口令的散列值
+		var newPassword = crypto.createHash('md5').update(password).digest('base64');
+		var oldPassword = crypto.createHash('md5').update(oldpassword).digest('base64');
+		
+		//检测是否匹配原密码
+		if(req.session.user.password != oldPassword) {
+			req.session.error = 'oldpassworderror';
 			return res.redirect('/modifyPwd');
 		}
-
-		//生成口令的散列值
-		var md5 = crypto.createHash('md5');
-		var newPassword = md5.update(password).digest('base64');
-
-		if(req.session.user.password != newPassword) {
+		
+		if(newPassword != req.session.user.password) {
 			//检查口令是否已经存在
 			User.get(newPassword, function(err, user) {
 				if(user) {
@@ -86,18 +86,14 @@ module.exports = function(app) {
 
 				//如果不存在则更新该用户口令
 				User.set(req.session.user,newPassword,function(err,result) {
-					console.log('>>third<<');
 					req.session.success = 'success';
-					return res.redirect('/modifyPwd');
+					return res.redirect('/login');
 				})
-
 			});
 		}else{
 			req.session.success = 'success';
-			return res.redirect('/modifyPwd');
+			return res.redirect('/login');
 		}
-
-		
 	}); 
 
 

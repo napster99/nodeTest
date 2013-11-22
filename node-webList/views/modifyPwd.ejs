@@ -4,9 +4,12 @@
 <div class="alert alert-error">
 	Error:口令长度为6~20位之间
 </div>
-<% } else if(locals.error === 'pwdnothesanme'){ %>
+<% } %>
+
+
+<% if(locals.error === 'oldpassworderror') { %>
 <div class="alert alert-error">
-	Error: 两次口令不一致
+	Error: 原口令不对
 </div>
 <% } %>
 
@@ -34,6 +37,13 @@
 				<p class="help-block">你的个人姓名全拼，用于登录（如：zhangsan）</p>
 			</div>
 		</div-->
+
+		<div class="control-group">
+			<label class="control-label" for="oldpassword">原口令</label>
+			<div class="controls">
+				<input type="password" class="input-xlarge" id="oldpassword" name="oldpassword">
+			</div>
+		</div>
 		
 		<div class="control-group">
 			<label class="control-label" for="password">新口令</label>
@@ -42,12 +52,7 @@
 			</div>
 		</div>
 
-		<div class="control-group">
-			<label class="control-label" for="password-repeat">重复输入口令</label>
-			<div class="controls">
-				<input type="password" class="input-xlarge" id="password-repeat" name="password-repeat">
-			</div>
-		</div>
+
 
 		<div class="form-actions">
 			<button type="submit" class="btn btn-primary">完成</button>
