@@ -22,7 +22,7 @@ $(function(){
 			showWhich($('li[name=addUser]'));
 			break;
 		default:
-			//do nothing
+			$('.nav').find('li.active').removeClass('active');
 	}
 	
 	$('.alert').fadeIn(1000,function(){

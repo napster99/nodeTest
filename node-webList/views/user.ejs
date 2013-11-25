@@ -1,23 +1,111 @@
 <%- include header %>
 
-<% if(locals.success) { %>
-<div class="alert alert-success">
-	<%= locals.success %>
+
+<div id="wrapper">
+	<div id="main">
+		<div id="sidebar">
+			<%- include sidebar %>
+		</div>
+		<div id="content">
+		<div class="panel">
+			<div class="header">
+				<ul class="breadcrumb">
+					<li><a href="/">主页</a><span class="divider">/</span></li>
+					<li class="active">snoopy</li>
+				</ul>
+			</div>
+			<div class="inner userinfo">
+				<div class="user_big_avatar">
+					<img src="http://gravatar.qiniudn.com/avatar/ba5cfa8ed415cdd50b556a9482c696e9?s=48" class="user_avatar" title="snoopy">
+				</div>
+				
+					
+					<button class="btn btn-success follow_btn" action="follow">加入关注</button>
+					
+				
+				<a class="dark">snoopy</a>
+				<div class="col_fade">
+					<span>
+						<img src="http://cnodejs.qiniudn.com/public/images/cert_icon&amp;16.png">
+						27 关注
+						221 粉丝
+						1220 积分</span>
+					
+				</div>
+				<div class="user_profile">
+					<ul class="unstyled">
+						
+						<li>
+							<img class="user_icon" src="http://cnodejs.qiniudn.com/public/images/paper_airplane_icon&amp;16.png">
+							<a class="dark" href="http://snoopyxdy.blog.163.com" target="_blank">http://snoopyxdy.blog.163.com</a>
+						</li>
+						
+						
+						
+						<li>
+							<img class="user_icon" src="http://cnodejs.qiniudn.com/public/images/twitter_2_icon&amp;16.png">
+							<a class="dark" href="http://weibo.com/spuout" target="_blank">http://weibo.com/spuout</a>
+						</li>
+						
+					</ul>
+					
+						<p>rrestjs,nodejs高性能restful框架</p>
+					
+				</div>
+				<p class="col_fade">于 2011-7-21 12:40 加入 CNode</p>
+				
+			</div>
+		</div>
+			<div class="panel">
+				<div class="header">
+					<span class="col_fade">最近发布话题</span>
+				</div>
+				<div class="cell">
+		  <div class="user_avatar block">
+		      <a href="/user/snoopy">
+		        <img src="http://gravatar.qiniudn.com/avatar/ba5cfa8ed415cdd50b556a9482c696e9?s=48" title="snoopy">
+		      </a>
+		  </div>
+		  <div class="block count">
+		    <a href="/topic/5293550ca6957a08096508fb" title="回复数">0</a>/<span title="点击数">45</span>
+		  </div>
+		  <div class="topic_wrap">
+		    <a class="" href="/topic/5293550ca6957a08096508fb">
+		      Node.js http 管道拒绝服务漏洞
+		    </a>
+		  </div>
+		    <div class="last_time">1 小时前</div>
+		</div>
+				<div class="cell more">
+					<a class="dark" href="/user/snoopy/topics">查看更多»</a>
+				</div>
+			</div>
+			<div class="panel"> 
+				<div class="header"> 
+					<span class="col_fade">最近参与话题</span> 
+				</div> 
+				<div class="cell"> 
+		  <div class="user_avatar block"> 
+		      <a href="/user/snoopy"> 
+		        <img src="http://gravatar.qiniudn.com/avatar/ba5cfa8ed415cdd50b556a9482c696e9?s=48" title="snoopy"> 
+		      </a> 
+		  </div> 
+		  <div class="block count"> 
+		    <a href="/topic/5293550ca6957a08096508fb" title="回复数">0</a>/<span title="点击数">45</span> 
+		  </div> 
+		  <div class="topic_wrap"> 
+		    <a class="" href="/topic/5293550ca6957a08096508fb"> 
+		      Node.js http 管道拒绝服务漏洞 
+		    </a> 
+		  </div> 
+		    <div class="last_time">1 小时前</div> 
+		</div> 
+				<div class="cell more"> 
+					<a class="dark" href="/user/snoopy/topics">查看更多»</a> 
+				</div> 
+			</div>
+		</div>
+	</div>
 </div>
-<% } %>
-
-<% if(locals.error) { %>
-<div class="alert alert-error">
-	<%= locals.error %>
-</div>
-<% } %>
-
-<% if(locals.user) { %>
-
-	<%- partial('say') %>
-
-<% } %>
-
-<%-  partial('posts', {posts:posts}) %>
-
+<div class="clearfix"></div>
 <%- include footer %>

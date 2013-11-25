@@ -1,0 +1,116 @@
+<%- include header %>
+<!--
+<% if(locals.success && locals.user) { %>
+<div class="alert alert-success" style="display:none;">
+	<%= locals.success %>
+</div>
+<% } %>
+
+<% if(locals.success && locals.success === '登出成功') { %>
+<div class="alert alert-success" style="display:none;">
+	<%= locals.success %>
+</div>
+<% } %>
+-->
+
+<% if(locals.error) { %>
+<div class="alert alert-error" style="display:none;">
+	<%= locals.error %>
+</div>
+<% } %>
+
+<div id="wrapper">
+	<div id="main">
+		<div id="sidebar">
+			<%- include sidebar %>
+		</div>
+		<div id="content">
+			<div class="panel">
+				<div class="header">
+					<ul class="breadcrumb">
+						<li><a href="/">主页</a><span class="divider">/</span></li>
+						<li class="active">话题详情</li>
+					</ul>
+				</div>
+				<div class="inner topic">
+					<h3>
+					对于链接只取前1k，谁能提供下代码或思路
+					</h3>
+					<hr>
+					<div class="topic_content">
+						<div class="markdown-text">
+							<p>做页面内容提取的时候需要提取title和decription部分，无需其他内容，为了减小服务器开支应取前部分代码就可以了，其他代码都是没用的。<br>对于链接只取前1k，谁能提供下代码或思路。
+							</p>
+							<p>再讨论下，有没有在前端实现的方式？<br>想了下iframe的方式不太安全。还有没有其他方式？</p>
+						</div>
+					</div>
+					<hr>
+					<div class="tags">
+						<span class="col_fade">标签：无</span>  
+					</div>
+					<div class="changes">
+						<span class="col_fade">
+							<a class="dark" href="/user/oluul">oluul</a> 在 8 小时前 发布
+						</span>
+					</div>
+				</div>
+			</div>
+			      
+			<div class="panel">
+				<div class="header">
+				<span class="col_fade">2 回复</span>
+				</div>
+				<div class="cell reply_area reply_item" id="reply2" reply_id="5293576aa6957a0809654d1b">
+					<a id="5293576aa6957a0809654d1b"></a>
+					<div class="author_content">
+						<div class="user_avatar block">
+							<a href="/user/leapon"><img src="http://gravatar.qiniudn.com/avatar/1fe5c803a92e0a808a42d0117167275f?size=48" title="leapon"></a>
+						</div>
+						<div class="user_info">
+							<span class="reply_author">
+								<a class="dark" href="/user/leapon">leapon</a>
+							</span>
+							<span class="col_fade">
+								<a href="#5293576aa6957a0809654d1b">36 分钟前</a>
+							</span>
+						</div>
+						<div class="user_action">
+							<span class="col_fade">#2</span>	
+						</div>
+					</div>		
+				</div>
+			</div>
+
+
+			<div class="panel">
+				<div class="header">
+					<span class="col_fade">添加回复</span>
+				</div>
+				<div class="inner reply">
+					<form id="reply_form" action="/5292ee0ba6957a080955a10f/reply" method="post">
+						<div class="tabbable">
+							<ul class="nav nav-pills">
+								<li class="active"><a href="#markdown" data-toggle="pill">markdown</a></li>
+							</ul>
+							<div class="tab-content">
+								<div class="tab-pane active" id="markdown">
+									<div id="wmd-button-bar"></div>
+									<textarea class="span8 editor" id="wmd-input" name="r_content" rows="8" style=""></textarea>
+									</div>
+									<div id="preview" class="tab-pane">
+									<div id="wmd-preview" class="wmd-preview reply-wmd-preview">
+									</div>
+								</div>
+							</div>
+							<input type="hidden" name="_csrf" id="_csrf" value="S6ZQLAM5BJ1aZqwWlQHp0X52">
+						</div>
+						<button id="submit_btn" class="btn">回复</button>
+						<span class="col_fade">Ctrl+Enter 快捷回复</span>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="clearfix"></div>
+<%- include footer %>

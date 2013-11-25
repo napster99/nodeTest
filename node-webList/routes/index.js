@@ -208,7 +208,12 @@ module.exports = function(app) {
 	// 	});
 	// });
 
-	app.get('/u/:user', function(req, res) {
+	//个人主页
+	app.get('/user/:user', function(req, res) {
+		res.render('user',{
+			title : 'xx'
+		})
+		return;
 		User.get(req.params.user, function(err, user) {
 			if(!user) {
 				req.session.error = '用户名不存在';
@@ -228,5 +233,16 @@ module.exports = function(app) {
 		});
 	});
 
+	//话题详细页
+	app.get('/topic/:id',function(req,res) {
+		console.log('------------------');
+		console.log(req.params.id);
+		console.log('-------------------');
+		res.render('messageDetail',{
+			title : '对于链接只取前1k，谁能提供下代码或思路',
+			
+		});
+		//return res.redirect('/topic/'+req.params.id);
+	});
 
 };
