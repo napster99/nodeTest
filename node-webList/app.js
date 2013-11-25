@@ -38,6 +38,12 @@ app.configure(function() {
     res.locals.user = req.session? req.session.user : null;
     res.locals.error = req.session? req.session.error : null;
 
+    // req.session.error = null;
+    // req.session.success = null;
+    // var url = req.originalUrl;
+    // if (url != '/login' && url != '/' && !req.session.user) {
+    //     return res.redirect('/login');
+    // }
     next();
   });
 
