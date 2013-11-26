@@ -18,14 +18,22 @@ module.exports = function(app) {
 		req.session.error = null;
 		req.session.success = null;
 		var url = req.originalUrl;
-	    if (url != '/login' && url != '/' && !req.session.user) {
+
+	    if (url != '/login' && url != '/' && url.indexOf('/topic/') < 0 && url.indexOf('?page=') < 0 && url !='/createTopic' && !req.session.user) {
+	       console.log('login')
 	        return res.redirect('/login');
 	    }
+	    
 	    next();
 	})
 
 
 	app.get('/',function(req, res) {
+		var curPage = 1;
+		if(req.url.indexOf('?page=') > -1) 
+			curPage = req.url.split('=')[1];
+
+
 		try{
 			Post.getPostsByCount(9,function(err, posts) {
 				if(err) {
@@ -235,14 +243,24 @@ module.exports = function(app) {
 
 	//话题详细页
 	app.get('/topic/:id',function(req,res) {
-		console.log('------------------');
-		console.log(req.params.id);
-		console.log('-------------------');
 		res.render('messageDetail',{
-			title : '对于链接只取前1k，谁能提供下代码或思路',
-			
+			title : '对于链接只取前1k，谁能提供下代码或思路'
 		});
 		//return res.redirect('/topic/'+req.params.id);
 	});
+
+
+	//发表话题
+	app.get('/createTopic',function(req,res) {
+		res.render('create',{
+			title : '发表话题'
+		});
+		//return res.redirect('/topic/'+req.params.id);
+	});
+
+	//提交话题
+	app.post('/topic/create',function(req,res) {
+		console.log(req.body['title'])
+	})
 
 };

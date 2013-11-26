@@ -1,0 +1,99 @@
+<%- include header %>
+
+
+<div id="wrapper">
+	<div id="main">
+		<div id="sidebar">
+			<div id="sidebar">
+			  <div class="panel">
+			    <div class="header">
+			      <span class="col_fade">话题发布步骤</span>
+			    </div>
+			    <div class="inner">
+			      <ol>
+			        <li>填写标题</li>
+			        <li>填写内容</li>
+			        <li>选择话题标签</li>
+			        <li>确认后发布话题</li>
+			      </ol>
+			    </div>
+			  </div>
+			  <div class="panel">
+			    <div class="header">
+			      <span class="col_fade">话题发布指南</span>
+			    </div>
+			    <div class="inner">
+			      <ol>
+			        <li>尽量把话题要点浓缩到标题里</li>
+			        <li>内容对标题做进一步说明，但不是必须的</li>
+			        <li>给话题选择合适的标签能增加被阅读的机会</li>
+			      </ol>
+			    </div>
+			  </div>
+			  <div class="panel">
+			    <div class="header">
+			      <span class="col_fade">markdown语法参考</span>
+			    </div>
+			    <div class="inner">
+			      <ol>
+			        <li>换行：两个空格</li>
+			        <li>分段：一个空行</li>
+			        <li>斜体：*斜体*</li>
+			        <li>粗体：**粗体**</li>
+			        <li>代码：行首四个空格</li>
+			        <li>链接：[文字](url)</li>
+			        <li>图片：![alt 文字](url)</li>
+			      </ol>
+			      <span>详见 <a href="http://www.ituring.com.cn/article/775" target="_blank">Markdown Wiki</a></span>
+			    </div>
+			  </div>
+			</div>
+		</div>
+		<div id="content">
+			<% if(!locals.user) { %>
+				<div class="panel">
+					<div class="header">
+						<ul class="breadcrumb">
+							<li><a href="/">主页</a><span class="divider">/</span></li>
+							<li class="active">通知</li>
+						</ul>
+					</div>
+					<div class="inner clearfix">
+						<a href="/login" id="create_topic_btn" class="create-login-btn" style="float:left;"> 
+							<button class="btn btn-success">马上登陆</button> 
+						</a>
+						<div class="alert alert-error">	
+							<strong>未登入用户不能发布话题。</strong>
+						</div>
+					
+					</div>
+				</div>
+			<%  } else { %>
+				<div class="panel">
+				<div class="header">
+					<ol class="breadcrumb">
+						<li><a href="/">主页</a><span class="divider">/</span></li>
+						<li class="active">发布话题</li>
+					</ol>
+				</div>
+				<div class="inner post">
+					<form id="create_topic_form" action="/topic/create" method="post">
+						<fieldset>
+							<label class="bold" for="title">标题</label>
+							<textarea class="span9" id="title" name="title" rows="1" placeholder="请在此输入标题，字数控制在10到100个之间"></textarea>
+							<label class="bold" for="t_content">内容</label>
+							<div id="editor_wmd-input" style="height: 200px; border: 1px solid rgb(221, 221, 221); border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px;"><iframe scrolling="no" frameborder="0" id="epiceditor-14542" style="width: 736px; height: 202px;"></iframe></div><textarea class="editor" id="wmd-input" name="t_content" rows="20" style="display: none;"></textarea>
+							<input type="hidden" id="topic_tags" name="topic_tags" value="">
+							<input type="hidden" name="_csrf" value="pdOBGd7d5RyqJN4x1Ela8HJY">
+							<button id="submit_btn" type="submit" class="btn">发布</button>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+			<% } %>
+		</div>
+	</div>
+</div>
+<div class="clearfix"></div>
+<script src="/javascripts/create.js"></script>
+<%- include footer %>
