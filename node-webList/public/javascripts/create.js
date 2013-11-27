@@ -8,8 +8,7 @@ $('#submit_btn').click(function() {
 
 	var htmlContent = previewIframe.find('#epiceditor-preview').html();
 
-	alert(htmlContent)
+	$('#messageContent').val(htmlContent);
 	
 	
-	return false;
 })

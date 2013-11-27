@@ -11,7 +11,7 @@ module.exports = function(app) {
 
 	var crypto = require('crypto');
 	var User = require('../models/user');
-	var Post = require('../models/post');
+	var Message = require('../models/message');
 
 	//登陆拦截器
 	app.get('/*',function(req,res,next) {
@@ -20,10 +20,8 @@ module.exports = function(app) {
 		var url = req.originalUrl;
 
 	    if (url != '/login' && url != '/' && url.indexOf('/topic/') < 0 && url.indexOf('?page=') < 0 && url !='/createTopic' && !req.session.user) {
-	       console.log('login')
 	        return res.redirect('/login');
 	    }
-	    
 	    next();
 	})
 
@@ -32,24 +30,21 @@ module.exports = function(app) {
 		var curPage = 1;
 		if(req.url.indexOf('?page=') > -1) 
 			curPage = req.url.split('=')[1];
+		//根据curPage 获得message数组
+		Message.getMessagesByPage(curPage,5,function(err, data) {
+			console.log(err)
+			console.log(data);
+		}); 
+		//根据每页显示数量，message数组长度，计算出总页数
+
+		//根据message数组不同元素，获得元素对应的回复数
 
 
-		try{
-			Post.getPostsByCount(9,function(err, posts) {
-				if(err) {
-					req.session.error = err;
-					return res.redirect('/');
-				}
-				
-				res.render('index',{
-					title : '首页',
-					posts : posts
-				});
-				
-			});
-		}catch(e){
-			console.log('Exception Coursor')
-		}
+		//组装成对象，输出到页面
+
+		// res.render('index',{
+		// 	title : '首页'
+		// });
 		
 	});
 
@@ -176,7 +171,6 @@ module.exports = function(app) {
 			// 	req.session.error = 'pwderror';
 			// 	return res.redirect('/login');
 			// }
-			console.log(user)
 			req.session.user = user;
 			req.session.success = '登入成功';
 			req.session.error = null;
@@ -260,7 +254,23 @@ module.exports = function(app) {
 
 	//提交话题
 	app.post('/topic/create',function(req,res) {
-		console.log(req.body['title'])
+		var title = req.body['title'];
+		var content = req.body['content'];
+		var message = new Message();
+		message['mtitle'] = title;
+		message['mcontent'] = content;
+		message['uid'] = req.session.user.uid;
+		
+		message.save(message,function(err,data) {
+			if(err) {
+				req.session.error = err;
+				return res.redirect('/createTopic');
+			}
+
+			if(data) {
+				return res.redirect('/');
+			}
+		})
 	})
 
 };

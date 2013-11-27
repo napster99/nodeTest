@@ -5,6 +5,7 @@ function User(user) {
 	this.password = user.password;
 	this.role = user.role;
 	this.mobile = user.mobile;
+	this.uid = user._id;
 };
 
 module.exports = User;
@@ -99,6 +100,9 @@ User.get = function get(password, callback) {
 				if(doc) {
 					//封装文档为User对象
 					var user = new User(doc);
+					// console.log('---------------------')
+					// console.log(doc._id.getTimestamp())
+					// console.log('---------------------')
 					callback(err,user);
 				} else {
 					callback(err,null);
