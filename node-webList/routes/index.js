@@ -12,6 +12,7 @@ module.exports = function(app) {
 	var crypto = require('crypto');
 	var User = require('../models/user');
 	var Message = require('../models/message');
+	var Reply = require('../models/replys');
 
 	//登陆拦截器
 	app.get('/*',function(req,res,next) {
@@ -25,26 +26,67 @@ module.exports = function(app) {
 	    next();
 	})
 
-
 	app.get('/',function(req, res) {
-		var curPage = 1;
+		var curPage = 1,perPages = 2;
 		if(req.url.indexOf('?page=') > -1) 
 			curPage = req.url.split('=')[1];
 		//根据curPage 获得message数组
-		Message.getMessagesByPage(curPage,5,function(err, data) {
-			console.log(err)
-			console.log(data);
-		}); 
-		//根据每页显示数量，message数组长度，计算出总页数
+		Message.getMessagesByPage(curPage,perPages,function(err, data) {
+			//根据每页显示数量，message数组长度，计算出总页数
+			var totalPages = 1;
+			/* 
+			 * 输出给页面的元素
+			 *  回复数        点击数       标题      发表时间  消息ID    用户ID
+			 *  replyCount    clickCount   title     time       mid      uid
+			 */
+			var objArr = [];
+			if(data instanceof Array) {
+				Message.getMessagesCount(function(err,count) {
+					if(count % perPages == 0 ) {
+						totalPages = parseInt(count/perPages);
+					}else{
+						totalPages = parseInt(count/perPages) + 1;
+					}
+					var midsArr = [];
+					for(var i=0; i<data.length; i++) {
+						midsArr.push(data[i]['_id']);
+					}
+					Reply.getReplysByMids(midsArr,function(err,replyArr) {
+						if(err) {
+							//TODO 查询回复数出错
+						}else{
+							
+								for(var i=0; i<data.length; i++) {
+									//根据message数组不同元素，获得元素对应的回复数
+									var obj = {
+										'replyCount' : Reply.getReplyCountByMid(data[i]['_id'],replyArr),
+										'clickCount' : data[i]['clickCount'] || 0,
+										'title'      : data[i]['mtitle'],
+										'time'       : data[i]['mtime'],
+										'mid'        : data[i]['_id'],
+										'uid'        : data[i]['uid'],
+										'totalPages' : totalPages
+									}
+									objArr.push(obj);
+								}
+								console.log('##########################');
+								console.log(objArr);
+								console.log('##########################');
 
-		//根据message数组不同元素，获得元素对应的回复数
-
-
-		//组装成对象，输出到页面
-
-		// res.render('index',{
-		// 	title : '首页'
-		// });
+								//组装成对象，输出到页面
+								res.render('index',{
+									title : '首页',
+									objArr : objArr
+								});
+							
+							
+						}
+					});
+					// console.log(objArr)
+				})
+			}
+		});
+		
 		
 	});
 
@@ -144,7 +186,6 @@ module.exports = function(app) {
 		//将新成员录入数据库
 		newUser.save(function(err) {
 			if(err) {
-				console.log(err)
 				req.session.error = 'saveError';
 				return res.redirect('/addUser');
 			}
@@ -172,6 +213,9 @@ module.exports = function(app) {
 			// 	return res.redirect('/login');
 			// }
 			req.session.user = user;
+			console.log('+++++++++++登入成功++++++++++++++');
+			console.log(req.session.user);
+			console.log('+++++++++++登入成功++++++++++++++');
 			req.session.success = '登入成功';
 			req.session.error = null;
 			res.redirect('/');
@@ -260,13 +304,12 @@ module.exports = function(app) {
 		message['mtitle'] = title;
 		message['mcontent'] = content;
 		message['uid'] = req.session.user.uid;
-		
+		message['clickCount'] = 0;
 		message.save(message,function(err,data) {
 			if(err) {
 				req.session.error = err;
 				return res.redirect('/createTopic');
 			}
-
 			if(data) {
 				return res.redirect('/');
 			}

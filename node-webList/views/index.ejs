@@ -19,6 +19,7 @@
 </div>
 <% } %>
 
+
 <div id="wrapper">
 	<div id="main">
 		<div id="sidebar">
@@ -29,21 +30,5 @@
 		</div>
 	</div>
 </div>
-<script>
-	var page = window.location.search.split('=')[1];
-	
-	    var options = {
-            currentPage: page || 1,
-            totalPages: 10,
-	   		numberOfPages:5,
-	   		onPageClicked : function(event,originalEvent,type,page) {
-	   			window.location.href = '/?page='+page;
-	   		}
-        }
 
-        $('#example').bootstrapPaginator(options);
-     //   $('#example').bootstrapPaginator("show",page);
-
-    
-</script>
 <%- include footer %>

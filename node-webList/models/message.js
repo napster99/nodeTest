@@ -1,11 +1,13 @@
 var mongodb = require('./db');
+var ObjectID = require("mongodb").ObjectID;
 
-function Message(mid, title, content, uid, time) {
+function Message(mid, title, content, uid, time,clickCount) {
 	this.mid = mid || '';
 	this.mtitle = title;
 	this.mcontent = content;
 	this.uid = uid;
 	this.mtime = time || +new Date();
+	this.clickCount = clickCount;
 };
 
 module.exports = Message;
@@ -18,19 +20,16 @@ Message.prototype.save = function save(message,callback) {
 		mcontent : message.mcontent,
 		uid : message.uid
 	};
-
 	mongodb.open(function(err, db) {
 		if(err) {
 			return callback(err);
 		}
-
 		//读取posts集合
 		db.collection('messages', function(err, collection) {
 			if(err) {
 				mongodb.close();
 				return callback(err);
 			}
-
 			//为Message属性添加索引
 			collection.ensureIndex('Message');
 			//写入message文档
@@ -42,6 +41,7 @@ Message.prototype.save = function save(message,callback) {
 	});
 };
 
+//根据第几页页数获得对应的消息列表
 Message.getMessagesByPage = function getMessagesByPage(page,perCount,callback) {
 	mongodb.open(function(err,db) {
 		if(err) {
@@ -52,11 +52,48 @@ Message.getMessagesByPage = function getMessagesByPage(page,perCount,callback) {
 				mongodb.close();
 				return callback(err);
 			}
-			// db.collection.find().skip((page-1)*perCount + 1).limit(perCount)
-			collection.find({}, {limit: perCount, skip:(page-1)*perCount},function(err,data) {
-				console.log('--------------')
-				console.log(typeof data)
-				console.log('22222222222222222')
+			collection.find().skip((page-1)*perCount).limit(perCount).toArray(function(err, data) {
+				mongodb.close();
+				var sData = [];
+				for(var i=0; i<data.length; i++) {
+					var timeStamp = new ObjectID(data[i]['_id'].toString()).getTimestamp();
+					var sTime = new Date(timeStamp).getTime();
+					var obj = {
+						'clickCount' : data[i]['clickCount'] || 0,
+						'mtitle' : data[i]['mtitle'],
+						'mtime' : sTime,
+						'_id' : data[i]['_id'],
+						'uid' : data[i]['uid']
+					}
+					sData.push(obj);
+				}
+				if(err) {
+					return callback(err);
+				}
+				callback(err,sData);
+			})
+		});
+ 	})
+}
+
+
+//获取消息总条数
+Message.getMessagesCount = function getMessagesCount(callback) {
+	mongodb.open(function(err,db) {
+		if(err) {
+			return callback(err);
+		}
+		db.collection('messages',function(err,collection) {
+			if(err) {
+				mongodb.close();
+				return callback(err);
+			}
+			collection.find().count(function(err,count) {
+				mongodb.close();
+				if(err) {
+					return callback(err);
+				}
+				return callback(err,count);
 			})
 		});
  	})

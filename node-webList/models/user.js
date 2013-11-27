@@ -100,9 +100,9 @@ User.get = function get(password, callback) {
 				if(doc) {
 					//封装文档为User对象
 					var user = new User(doc);
-					// console.log('---------------------')
-					// console.log(doc._id.getTimestamp())
-					// console.log('---------------------')
+					console.log('---------------------')
+					console.log(doc)
+					console.log('---------------------')
 					callback(err,user);
 				} else {
 					callback(err,null);
