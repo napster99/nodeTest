@@ -13,6 +13,7 @@ module.exports = function(app) {
 	var User = require('../models/user');
 	var Message = require('../models/message');
 	var Reply = require('../models/replys');
+	var CommonJS = require('../models/common');
 
 	//登陆拦截器
 	app.get('/*',function(req,res,next) {
@@ -20,7 +21,7 @@ module.exports = function(app) {
 		req.session.success = null;
 		var url = req.originalUrl;
 
-	    if (url != '/login' && url != '/' && url.indexOf('/topic/') < 0 && url.indexOf('?page=') < 0 && url !='/createTopic' && !req.session.user) {
+	    if (url != '/addUser' && url != '/login' && url != '/' && url.indexOf('/topic/') < 0 && url.indexOf('?page=') < 0 && url !='/createTopic' && !req.session.user) {
 	        return res.redirect('/login');
 	    }
 	    next();
@@ -59,20 +60,23 @@ module.exports = function(app) {
 							
 							for(var i=0; i<data.length; i++) {
 								//根据message数组不同元素，获得元素对应的回复数
+								var mtime = data[i]['mtime']
+								var time = CommonJS.changeTime(mtime);
+								
 								var obj = {
 									'replyCount' : Reply.getReplyCountByMid(data[i]['_id'],replyArr),
 									'clickCount' : data[i]['clickCount'] || 0,
 									'title'      : data[i]['mtitle'],
-									'time'       : data[i]['mtime'],
+									'time'       : time,
 									'mid'        : data[i]['_id'],
 									'uid'        : data[i]['uid'],
 									'totalPages' : totalPages
 								}
 								objArr.push(obj);
 							}
-							console.log('##########################');
-							console.log(objArr);
-							console.log('##########################');
+							// console.log('##########################');
+							// console.log(objArr);
+							// console.log('##########################');
 
 							//组装成对象，输出到页面
 							res.render('index',{
@@ -191,7 +195,7 @@ module.exports = function(app) {
 			req.session.success = 'saveSuccess';
 			req.session.error = null;
 			
-			res.redirect('/addUser');
+			res.redirect('/login');
 		});
 
 	});
@@ -280,6 +284,7 @@ module.exports = function(app) {
 	app.get('/topic/:id',function(req,res) {
 		var mid = req.params.id;
 		var messageDetail = {};
+		console.time('nap')
 
 		Message.getMessageByMid(mid,function(err,data) {
 			if(err) {
@@ -299,7 +304,7 @@ module.exports = function(app) {
  					messageDetail['mcontent'] = data['mcontent'];
  					messageDetail['mname'] = user[0]['name'];
  					messageDetail['muid'] = user[0]['_id'];
- 					messageDetail['mtime'] = data['mtime'];
+ 					messageDetail['mtime'] = CommonJS.changeTime(data['mtime']);
  					messageDetail['mid'] = data['_id'];
 
  					Reply.getReplysByMids([mid],function(err,replyArr) {
@@ -318,7 +323,7 @@ module.exports = function(app) {
 										'mid' : replyArr[i]['mid'],
 										'uid' : replyArr[i]['uid'],
 										'uname' : User.getUsernameByUid(replyArr[i]['uid'],users),
-										'rtime' : replyArr[i]['rtime']
+										'rtime' : CommonJS.changeTime(replyArr[i]['rtime']) 
 									}
 									tempArr.push(objReply);
 								}
@@ -326,10 +331,17 @@ module.exports = function(app) {
 								// console.log('----------result----------------')
 								// console.log(tempArr)
 								// console.log('----------result----------------')
-								res.render('messageDetail',{
-									'title':messageDetail['mtitle'],
-									'messageDetail' : messageDetail
-								})
+								Message.updateMessagecNumByMid(mid,function(err) {
+										if(err) {
+											//TODO
+										}else{
+											res.render('messageDetail',{
+													'title':messageDetail['mtitle'],
+													'messageDetail' : messageDetail
+												})
+										}
+									});
+								
 							})
 							
 						}
@@ -341,7 +353,7 @@ module.exports = function(app) {
 
 			}
 		})
-
+		console.timeEnd('nap')
 
 		// res.render('messageDetail',{
 		// 	title : '对于链接只取前1k，谁能提供下代码或思路'

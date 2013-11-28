@@ -29,7 +29,7 @@
 				<div class="header">
 					<ul class="breadcrumb">
 						<li><a href="/">主页</a><span class="divider">/</span></li>
-						<li class="active">话题详情</li>
+						<li class="active">消息详情</li>
 					</ul>
 				</div>
 				<div class="inner topic">
@@ -54,12 +54,12 @@
 				</div>
 			</div>
 
-			 <% messageDetail.forEach(function(post, index) { %>
+			 <% for(var i=0; i<messageDetail['mReplyObj'].length; i++) { %>
 				<div class="panel">
 					<div class="header">
-					<span class="col_fade">2 回复</span>
+					<span class="col_fade"><%= messageDetail['mReplyObj'].length %>  回复</span>
 					</div>
-					<div class="cell reply_area reply_item" id="reply2" reply_id="5293576aa6957a0809654d1b">
+					<div class="cell reply_area reply_item" id="reply<%=i%>" reply_id="5293576aa6957a0809654d1b">
 						<a id="5293576aa6957a0809654d1b"></a>
 						<div class="author_content">
 							<div class="user_avatar block">
@@ -67,16 +67,21 @@
 							</div>
 							<div class="user_info">
 								<span class="reply_author">
-									<a class="dark" href="/user/leapon">leapon</a>
+									<a class="dark" href="/user/leapon"><%= messageDetail['mReplyObj'][i]['uname'] %></a>
 								</span>
 								<span class="col_fade">
-									<a href="#5293576aa6957a0809654d1b">36 分钟前</a>
+									<a href="#5293576aa6957a0809654d1b"><%= messageDetail['mReplyObj'][i]['rtime'] %></a>
 								</span>
 							</div>
 							<div class="user_action">
-								<span class="col_fade">#2</span>	
+								<span class="col_fade">#<%=i+1%></span>	
 							</div>
-						</div>		
+						</div>	
+						<div class="reply_content">
+						<div class="markdown-text">
+						<%- messageDetail['mReplyObj'][i]['rcontent'] %> 
+						</div>
+						</div>	
 					</div>
 				</div>
 			<% } %>

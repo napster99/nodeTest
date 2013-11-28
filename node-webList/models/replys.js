@@ -54,9 +54,14 @@ Reply.getReplysByMids = function getReplysByMids(midsArr,callback) {
 				mongodb.close();
 				return callback(err);
 			}
+			// console.log('+++++++++')
+			// console.log(midsArr)
+			// console.log('+++++++++')
+			for(var i=0; i<midsArr.length; i++) {
+				midsArr[i] = midsArr[i].toString();
+			}
 			collection.find( { "mid" : { $in : midsArr } }).toArray(function(err,data) {
 				mongodb.close();
-				
 				var dArr = [];
 				for(var i=0; i<data.length; i++) {
 					var timeStamp = new ObjectID(data[i]['_id'].toString()).getTimestamp();
@@ -69,9 +74,6 @@ Reply.getReplysByMids = function getReplysByMids(midsArr,callback) {
 					}
 					dArr.push(obj);
 				}
-				// console.log('+++++++++++')
-				// console.log(dArr)
-				// console.log('+++++++++++')
 				return callback(err,dArr)
 			});
 			// this.mid = mid || '';
@@ -100,7 +102,9 @@ Reply.getReplysByMids = function getReplysByMids(midsArr,callback) {
 
 Reply.getReplyCountByMid = function getReplyCountByMid(mid,arrs) {
 	var count = 0;
+	console.log(arrs)
 	for(var i=0; i<arrs.length; i++) {
+		console.log([mid,arrs[i]['mid']])
 		if(mid == arrs[i]['mid']) count++;
 	}
 	return count;

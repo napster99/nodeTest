@@ -18,7 +18,8 @@ Message.prototype.save = function save(message,callback) {
 	var message = {
 		mtitle : message.mtitle,
 		mcontent : message.mcontent,
-		uid : message.uid
+		uid : message.uid,
+		clickCount : message.clickCount
 	};
 	mongodb.open(function(err, db) {
 		if(err) {
@@ -131,6 +132,35 @@ Message.getMessageByMid = function getMessageByMid(mid,callback) {
 		});
  	})
 }
+
+//通过mid更改点击数
+Message.updateMessagecNumByMid = function updateMessagecNumByMid(mid,callback) {
+	mongodb.open(function(err,db) {
+		if(err) {
+			return callback(err);
+		}
+		db.collection('messages',function(err,collection) {
+			if(err) {
+				mongodb.close();
+				return callback(err);
+			}
+			collection.findOne({_id:ObjectID(mid)},function(err,data) {
+				if(err) {
+					return callback(err);
+				}
+				console.log(mid)
+				console.log(data['clickCount'])
+				var count = parseInt(data['clickCount']) + 1;
+				console.log(count)
+				collection.update({_id:ObjectID(mid)},{$set:{clickCount:count}},false,true);
+				mongodb.close();
+				callback();
+			})
+		});
+ 	})
+}
+
+
 
 // Post.get = function get(username, callback) {
 	
