@@ -26,6 +26,7 @@ module.exports = function(app) {
 	    next();
 	})
 
+	//访问首页
 	app.get('/',function(req, res) {
 		var curPage = 1,perPages = 2;
 		if(req.url.indexOf('?page=') > -1) 
@@ -56,38 +57,34 @@ module.exports = function(app) {
 							//TODO 查询回复数出错
 						}else{
 							
-								for(var i=0; i<data.length; i++) {
-									//根据message数组不同元素，获得元素对应的回复数
-									var obj = {
-										'replyCount' : Reply.getReplyCountByMid(data[i]['_id'],replyArr),
-										'clickCount' : data[i]['clickCount'] || 0,
-										'title'      : data[i]['mtitle'],
-										'time'       : data[i]['mtime'],
-										'mid'        : data[i]['_id'],
-										'uid'        : data[i]['uid'],
-										'totalPages' : totalPages
-									}
-									objArr.push(obj);
+							for(var i=0; i<data.length; i++) {
+								//根据message数组不同元素，获得元素对应的回复数
+								var obj = {
+									'replyCount' : Reply.getReplyCountByMid(data[i]['_id'],replyArr),
+									'clickCount' : data[i]['clickCount'] || 0,
+									'title'      : data[i]['mtitle'],
+									'time'       : data[i]['mtime'],
+									'mid'        : data[i]['_id'],
+									'uid'        : data[i]['uid'],
+									'totalPages' : totalPages
 								}
-								console.log('##########################');
-								console.log(objArr);
-								console.log('##########################');
+								objArr.push(obj);
+							}
+							console.log('##########################');
+							console.log(objArr);
+							console.log('##########################');
 
-								//组装成对象，输出到页面
-								res.render('index',{
-									title : '首页',
-									objArr : objArr
-								});
-							
-							
+							//组装成对象，输出到页面
+							res.render('index',{
+								title : '首页',
+								objArr : objArr
+							});
 						}
 					});
 					// console.log(objArr)
 				})
 			}
 		});
-		
-		
 	});
 
 	app.get('/modifyPwd', function(req, res) {
@@ -281,9 +278,74 @@ module.exports = function(app) {
 
 	//话题详细页
 	app.get('/topic/:id',function(req,res) {
-		res.render('messageDetail',{
-			title : '对于链接只取前1k，谁能提供下代码或思路'
-		});
+		var mid = req.params.id;
+		var messageDetail = {};
+
+		Message.getMessageByMid(mid,function(err,data) {
+			if(err) {
+				//TODO
+			} else {
+				/*
+				 * 信息详细页展示  
+				 * 消息标题     消息内容       发布者姓名和uid 发布时间   回复数      回复实体
+				 * mtitle        mcontent       mname muid      mtime     replyCount   mReplyObj
+				 * 	
+				 * 	mReplyObj-->rcontent mid uid  uname rtime 
+ 				 */
+ 				 // console.log(data)
+ 				User.getUsersByUids([data['uid']],function(err,user) {
+ 					// console.log(user)
+ 					messageDetail['mtitle'] = data['mtitle'];
+ 					messageDetail['mcontent'] = data['mcontent'];
+ 					messageDetail['mname'] = user[0]['name'];
+ 					messageDetail['muid'] = user[0]['_id'];
+ 					messageDetail['mtime'] = data['mtime'];
+ 					messageDetail['mid'] = data['_id'];
+
+ 					Reply.getReplysByMids([mid],function(err,replyArr) {
+						if(err) {
+							//TODO
+						}else{
+							var uidArr = [];
+							for(var i=0; i<replyArr.length; i++) {
+								uidArr.push(replyArr[i]['uid']);
+							}
+							User.getUsersByUids(uidArr,function(err,users) {
+								var tempArr = [];
+								for(var i=0; i<replyArr.length; i++) {
+									var objReply = {
+										'rcontent' : replyArr[i]['rcontent'],
+										'mid' : replyArr[i]['mid'],
+										'uid' : replyArr[i]['uid'],
+										'uname' : User.getUsernameByUid(replyArr[i]['uid'],users),
+										'rtime' : replyArr[i]['rtime']
+									}
+									tempArr.push(objReply);
+								}
+								messageDetail['mReplyObj'] = tempArr;
+								// console.log('----------result----------------')
+								// console.log(tempArr)
+								// console.log('----------result----------------')
+								res.render('messageDetail',{
+									'title':messageDetail['mtitle'],
+									'messageDetail' : messageDetail
+								})
+							})
+							
+						}
+					})
+ 				});
+				
+
+
+
+			}
+		})
+
+
+		// res.render('messageDetail',{
+		// 	title : '对于链接只取前1k，谁能提供下代码或思路'
+		// });
 		//return res.redirect('/topic/'+req.params.id);
 	});
 
@@ -314,6 +376,26 @@ module.exports = function(app) {
 				return res.redirect('/');
 			}
 		})
+	})
+
+
+	//提交回复
+	app.post('/reply/:mid',function(req,res) {
+		var content = req.body['content'];
+		var mid = req.params.mid;
+		var uid = req.session.user.uid;
+		
+		var reply = new Reply(mid,content,uid);
+		console.log(reply)
+
+		reply.save(reply,function(err,reply) {
+			if(err) {
+				//TODO
+			} else {
+				return res.redirect('/topic/'+mid);
+			}
+		})
+
 	})
 
 };

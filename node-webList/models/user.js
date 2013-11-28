@@ -1,4 +1,5 @@
 var mongodb = require('./db');
+var ObjectID = require("mongodb").ObjectID;
 
 function User(user) {
 	this.name = user.name;
@@ -145,3 +146,42 @@ User.set = function set(user,newPassword, callback) {
 	});
 }
 
+
+
+//通过uids（数组）获取用户信息
+User.getUsersByUids = function getUsersByUids(uids, callback) {
+	mongodb.open(function(err, db) {
+		if(err) {
+			return callback(err);
+		}
+		//读取users集合
+		db.collection('users', function(err, collection) {
+			if(err) {
+				mongodb.close();
+				return callback(err);
+			}
+			for(var i=0; i<uids.length; i++) {
+				uids[i] = ObjectID(uids[i]);
+			}
+			//查找password属性为username的文档	
+			collection.find( { "_id" : { $in : uids } }).toArray(function(err,data) {
+				mongodb.close();
+				// console.log('+++++++++++')
+				// console.log(data)
+				// console.log('+++++++++++')
+				return callback(err,data)
+			});
+
+
+		});
+	});
+}
+
+//通过uid得到uname
+User.getUsernameByUid = function getUsernameByUid(uid,users) {
+	
+	for(var i=0; i<users.length; i++) {
+		if(uid == users[i]['_id']) return users[i]['name'];
+	}
+	return '';
+}

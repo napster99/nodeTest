@@ -1,6 +1,7 @@
 var mongodb = require('./db');
+var ObjectID = require("mongodb").ObjectID;
 
-function Reply(mid, title, content, uid, time) {
+function Reply(mid, content, uid, time) {
 	this.mid = mid || '';
 	this.rcontent = content;
 	this.uid = uid;
@@ -10,21 +11,21 @@ function Reply(mid, title, content, uid, time) {
 module.exports = Reply;
 
 
-Reply.prototype.save = function save(message,callback) {
+Reply.prototype.save = function save(reply,callback) {
 	//存入Mongodb的文档
-	var message = {
-		mtitle : message.mtitle,
-		mcontent : message.mcontent,
-		uid : message.uid
+	var reply = {
+		mid : reply.mid,
+		rcontent : reply.rcontent,
+		uid : reply.uid
 	};
-
+	
 	mongodb.open(function(err, db) {
 		if(err) {
 			return callback(err);
 		}
 
 		//读取posts集合
-		db.collection('messages', function(err, collection) {
+		db.collection('replys', function(err, collection) {
 			if(err) {
 				mongodb.close();
 				return callback(err);
@@ -33,9 +34,9 @@ Reply.prototype.save = function save(message,callback) {
 			//为Message属性添加索引
 			collection.ensureIndex('Reply');
 			//写入message文档
-			collection.insert(message, {safe : true}, function(err, message) {
+			collection.insert(reply, {safe : true}, function(err, reply) {
 				mongodb.close();
-				callback(err, message);
+				callback(err, reply);
 			});
 		});
 	});
@@ -55,10 +56,23 @@ Reply.getReplysByMids = function getReplysByMids(midsArr,callback) {
 			}
 			collection.find( { "mid" : { $in : midsArr } }).toArray(function(err,data) {
 				mongodb.close();
+				
+				var dArr = [];
+				for(var i=0; i<data.length; i++) {
+					var timeStamp = new ObjectID(data[i]['_id'].toString()).getTimestamp();
+					var sTime = new Date(timeStamp).getTime();
+					var obj = {
+						'rtime' : sTime,
+						'rcontent' : data[i]['rcontent'],
+						'mid' : data[i]['mid'],
+						'uid' : data[i]['uid']
+					}
+					dArr.push(obj);
+				}
 				// console.log('+++++++++++')
-				// console.log(data)
+				// console.log(dArr)
 				// console.log('+++++++++++')
-				return callback(err,data)
+				return callback(err,dArr)
 			});
 			// this.mid = mid || '';
 			// this.rcontent = content;

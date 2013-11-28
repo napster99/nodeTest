@@ -99,6 +99,39 @@ Message.getMessagesCount = function getMessagesCount(callback) {
  	})
 }
 
+
+//通过mid获取单条消息内容
+Message.getMessageByMid = function getMessageByMid(mid,callback) {
+	mongodb.open(function(err,db) {
+		if(err) {
+			return callback(err);
+		}
+		db.collection('messages',function(err,collection) {
+			if(err) {
+				mongodb.close();
+				return callback(err);
+			}
+			collection.findOne({_id:ObjectID(mid)},function(err,data) {
+				mongodb.close();
+				if(err) {
+					return callback(err);
+				}
+				
+				var timeStamp = new ObjectID(data['_id'].toString()).getTimestamp();
+				var sTime = new Date(timeStamp).getTime();
+				var obj = {
+					'mtitle' : data['mtitle'],
+					'mtime' : sTime,
+					'mcontent' : data['mcontent'],
+					'_id' : data['_id'],
+					'uid' : data['uid']
+				}
+				return callback(err,obj);
+			})
+		});
+ 	})
+}
+
 // Post.get = function get(username, callback) {
 	
 // 	mongodb.open(function(err,db) {
