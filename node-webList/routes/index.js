@@ -49,40 +49,43 @@ module.exports = function(app) {
 					}else{
 						totalPages = parseInt(count/perPages) + 1;
 					}
-					var midsArr = [];
+					var midsArr = [],uidsArr = [];
 					for(var i=0; i<data.length; i++) {
 						midsArr.push(data[i]['_id']);
+						uidsArr.push(data[i]['uid']);
 					}
 					Reply.getReplysByMids(midsArr,function(err,replyArr) {
 						if(err) {
 							//TODO 查询回复数出错
 						}else{
-							
-							for(var i=0; i<data.length; i++) {
-								//根据message数组不同元素，获得元素对应的回复数
-								var mtime = data[i]['mtime']
-								var time = CommonJS.changeTime(mtime);
-								
-								var obj = {
-									'replyCount' : Reply.getReplyCountByMid(data[i]['_id'],replyArr),
-									'clickCount' : data[i]['clickCount'] || 0,
-									'title'      : data[i]['mtitle'],
-									'time'       : time,
-									'mid'        : data[i]['_id'],
-									'uid'        : data[i]['uid'],
-									'totalPages' : totalPages
-								}
-								objArr.push(obj);
-							}
-							// console.log('##########################');
-							// console.log(objArr);
-							// console.log('##########################');
 
-							//组装成对象，输出到页面
-							res.render('index',{
-								title : '首页',
-								objArr : objArr
-							});
+							User.getUsersByUids(uidsArr,function(err,userArr) {
+								for(var i=0; i<data.length; i++) {
+									//根据message数组不同元素，获得元素对应的回复数
+									var mtime = data[i]['mtime']
+									var time = CommonJS.changeTime(mtime);
+									
+									var obj = {
+										'replyCount' : Reply.getReplyCountByMid(data[i]['_id'],replyArr),
+										'clickCount' : data[i]['clickCount'] || 0,
+										'title'      : data[i]['mtitle'],
+										'time'       : time,
+										'mid'        : data[i]['_id'],
+										'uid'        : data[i]['uid'],
+										'uname' 	 : User.getUsernameByUid(data[i]['uid'],userArr),
+										'totalPages' : totalPages
+									}
+									objArr.push(obj);
+								}
+
+								//组装成对象，输出到页面
+								res.render('index',{
+									title : '首页',
+									objArr : objArr
+								});
+							})
+							
+							
 						}
 					});
 					// console.log(objArr)
@@ -257,27 +260,11 @@ module.exports = function(app) {
 
 	//个人主页
 	app.get('/user/:user', function(req, res) {
+		console.log(req.params.user)
 		res.render('user',{
 			title : 'xx'
 		})
-		return;
-		User.get(req.params.user, function(err, user) {
-			if(!user) {
-				req.session.error = '用户名不存在';
-				req.session.success = '';
-				return res.redirect('/');
-			}
-			Post.get(user.name,function(err, posts) {
-				if(err) {
-					req.session.error = err;
-					return res.redirect('/');
-				}
-				res.render('user', {
-					title : user.name,
-					posts : posts 
-				});
-			});
-		});
+		
 	});
 
 	//话题详细页

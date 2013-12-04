@@ -175,6 +175,7 @@ User.getUsersByUids = function getUsersByUids(uids, callback) {
 
 		});
 	});
+	return 555;
 }
 
 //通过uid得到uname
