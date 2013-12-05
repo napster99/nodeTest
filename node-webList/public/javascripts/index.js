@@ -21,6 +21,9 @@ $(function(){
 		case '/addUser':
 			showWhich($('li[name=addUser]'));
 			break;
+		case '/addDaily':
+			showWhich($('li[name=addDaily]'))；
+			break;
 		default:
 			$('.nav').find('li.active').removeClass('active');
 	}

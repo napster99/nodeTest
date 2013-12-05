@@ -397,4 +397,35 @@ module.exports = function(app) {
 
 	})
 
+
+
+	//写日/周报
+	app.get('/addDaily',function(req, res) {
+		res.render('addDaily',{
+			title : '发布日/周报'
+		});
+	});
+
+	//提交日报周报
+	app.post('/createDaily',function(req,res) {
+		var title = req.body['title'];
+		var content = req.body['content'];
+		var type = req.body['which'];
+		var uid = req.session.user.uid;
+		console.log(title)
+		console.log(content)
+		console.log(type)
+		console.log(uid)
+		// var reply = new Reply(mid,content,uid);
+
+		// reply.save(reply,function(err,reply) {
+		// 	if(err) {
+		// 		//TODO
+		// 	} else {
+		// 		return res.redirect('/topic/'+mid);
+		// 	}
+		// })
+
+	})
+
 };
