@@ -7,6 +7,7 @@ function User(user) {
 	this.role = user.role;
 	this.mobile = user.mobile;
 	this.uid = user._id;
+	this.score = user.score || 0;
 };
 
 module.exports = User;
@@ -17,7 +18,8 @@ User.prototype.save = function save(callback) {
 		name : this.name,
 		password : this.password,
 		mobile : this.mobile,
-		role : this.role
+		role : this.role,
+		score : this.score || 0
 	};
 
 	mongodb.open(function(err, db) {
@@ -101,9 +103,6 @@ User.get = function get(password, callback) {
 				if(doc) {
 					//封装文档为User对象
 					var user = new User(doc);
-					console.log('---------------------')
-					console.log(doc)
-					console.log('---------------------')
 					callback(err,user);
 				} else {
 					callback(err,null);
@@ -131,7 +130,6 @@ User.set = function set(user,newPassword, callback) {
 			//查找password属性为username的文档
 			collection.update({password : user['password']},{$set:{password:newPassword}},function(err, doc) {
 				mongodb.close();
-				console.log('===============')
 				// if(doc) {
 				// 	//封装文档为User对象
 				// 	var user = new User(doc);
@@ -166,9 +164,6 @@ User.getUsersByUids = function getUsersByUids(uids, callback) {
 			//查找password属性为username的文档	
 			collection.find( { "_id" : { $in : uids } }).toArray(function(err,data) {
 				mongodb.close();
-				// console.log('+++++++++++')
-				// console.log(data)
-				// console.log('+++++++++++')
 				return callback(err,data)
 			});
 
@@ -186,3 +181,58 @@ User.getUsernameByUid = function getUsernameByUid(uid,users) {
 	}
 	return '';
 }
+
+
+
+//通过uid获取score
+User.getScoreByUid = function getScoreByUid(uid, callback) {
+	mongodb.open(function(err, db) {
+		if(err) {
+			mongodb.close();
+			return callback(err);
+		}
+		//读取users集合
+		db.collection('users', function(err, collection) {
+			if(err) {
+				mongodb.close();
+				return callback(err);
+			}
+			collection.findOne({"_id":ObjectID(uid)},function(err,user) {
+				mongodb.close();
+				callback(err,user);
+			})
+
+		});
+	});
+}
+
+//更新积分
+
+User.updateScore = function updateScore(uid,score, callback) {
+	mongodb.open(function(err, db) {
+		if(err) {
+			return callback(err);
+		}
+		//读取users集合
+		db.collection('users', function(err, collection) {
+			if(err) {
+				mongodb.close();
+				return callback(err);
+			}
+			//查找password属性为username的文档
+			collection.update({"_id" : ObjectID(uid)},{$set:{score:score}},function(err, doc) {
+				mongodb.close();
+				// if(doc) {
+				// 	//封装文档为User对象
+				// 	var user = new User(doc);
+					callback();
+				// } else {
+				// 	callback(err,null);
+				// }
+			});
+
+
+		});
+	});
+}
+

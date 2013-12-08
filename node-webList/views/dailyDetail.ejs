@@ -1,0 +1,46 @@
+<%- include header %>
+
+
+<% if(locals.error) { %>
+<div class="alert alert-error" style="display:none;">
+	<%= locals.error %>
+</div>
+<% } %>
+
+<div id="wrapper">
+	<div id="main">
+		<div id="sidebar">
+			<%- include sidebar %>
+		</div>
+		<div id="content">
+			<div class="panel">
+				<div class="header">
+					<ul class="breadcrumb">
+						<li><a href="/">主页</a><span class="divider">/</span></li>
+						<li class="active">消息详情</li>
+					</ul>
+				</div>
+				<div class="inner topic">
+					<h3>
+						<%= messageDetail['mtitle']  %>
+					</h3>
+					<hr>
+					<div class="topic_content">
+						<div class="markdown-text">
+							<%- messageDetail['mcontent'] %>
+						</div>
+					</div>
+					<hr>
+					<div class="changes">
+						<span class="col_fade">
+							<a class="dark" href="/user/oluul"><%= messageDetail['mname'] %></a> 在 <%= messageDetail['mtime'] %> 发布
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="clearfix"></div>
+<script src="/javascripts/dailyDetail.js"></script>
+<%- include footer %>

@@ -49,7 +49,6 @@
 				</div>
 				<div class="inner post">
 					<form id="create_topic_form" action="/createDaily" method="post">
-						<input type="hidden" name="content" id="messageContent" />
 						<fieldset>
 							<label class="bold" for="title">标题</label>
 							<textarea class="span9" id="title" name="title" rows="1" placeholder="默认为《yyyy/MM/dd的日报》"></textarea>
@@ -61,10 +60,10 @@
 							<button id="submit_btn" type="submit" class="btn">发布</button>
 
 							<label class="radio inline" style="margin-left:20px;">
-							  <input type="radio" id="rb" name="which" value="1" checked="true" nickname="日报"> 日报
+							  <input type="radio" id="rb" name="which" value="day" checked="true" nickname="日报"> 日报
 							</label>
 							<label class="radio inline">
-							  <input type="radio" id="zb" name="which" value="2" nickname="周报"> 周报
+							  <input type="radio" id="zb" name="which" value="week" nickname="周报"> 周报
 							</label>
 						</fieldset>
 					</form>

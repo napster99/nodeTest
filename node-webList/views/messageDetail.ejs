@@ -93,20 +93,14 @@
 				</div>
 				<div class="inner reply">
 					<form id="reply_form" action="/reply/<%= messageDetail['mid'] %>" method="post">
-						<input type="hidden" name="content" id="messageContent" />
 						<div class="tabbable">
 							<ul class="nav nav-pills">
 								<li class="active"><a href="#markdown" data-toggle="pill">markdown</a></li>
 							</ul>
 							<div class="tab-content">
-								<div class="tab-pane active" id="markdown">
-									<div id="wmd-button-bar"></div>
-									<textarea class="span8 editor" id="wmd-input" name="r_content" rows="8" style=""></textarea>
-									</div>
-									<div id="preview" class="tab-pane">
-									<div id="wmd-preview" class="wmd-preview reply-wmd-preview">
-									</div>
-								</div>
+								<div style="width:700px;">
+								<textarea name="content" rows="18" style="width:100%;"></textarea>
+							</div>
 							</div>
 							<input type="hidden" name="_csrf" id="_csrf" value="S6ZQLAM5BJ1aZqwWlQHp0X52">
 						</div>

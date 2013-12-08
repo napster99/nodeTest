@@ -1,13 +1,14 @@
 var mongodb = require('./db');
 var ObjectID = require("mongodb").ObjectID;
 
-function Message(mid, title, content, uid, time,clickCount) {
+function Message(mid, title, content, uid, time,clickCount,type) {
 	this.mid = mid || '';
 	this.mtitle = title;
 	this.mcontent = content;
 	this.uid = uid;
 	this.mtime = time || +new Date();
 	this.clickCount = clickCount;
+	this.type = type || 'normal';
 };
 
 module.exports = Message;
@@ -19,7 +20,8 @@ Message.prototype.save = function save(message,callback) {
 		mtitle : message.mtitle,
 		mcontent : message.mcontent,
 		uid : message.uid,
-		clickCount : message.clickCount
+		clickCount : message.clickCount,
+		type : message.type || 'normal'
 	};
 	mongodb.open(function(err, db) {
 		if(err) {
@@ -53,7 +55,11 @@ Message.getMessagesByPage = function getMessagesByPage(page,perCount,callback) {
 				mongodb.close();
 				return callback(err);
 			}
-			collection.find().skip((page-1)*perCount).limit(perCount).toArray(function(err, data) {
+			collection.find({type:'normal'},function(data) {
+				console.log(data)
+			})
+			collection.find({type:'normal'}).skip((page-1)*perCount).limit(perCount).toArray(function(err, data) {
+				console.log(data)
 				mongodb.close();
 				var sData = [];
 				for(var i=0; i<data.length; i++) {
@@ -89,7 +95,7 @@ Message.getMessagesCount = function getMessagesCount(callback) {
 				mongodb.close();
 				return callback(err);
 			}
-			collection.find().count(function(err,count) {
+			collection.find({type:'normal'}).count(function(err,count) {
 				mongodb.close();
 				if(err) {
 					return callback(err);
@@ -155,6 +161,68 @@ Message.updateMessagecNumByMid = function updateMessagecNumByMid(mid,callback) {
 				collection.update({_id:ObjectID(mid)},{$set:{clickCount:count}},false,true);
 				mongodb.close();
 				callback();
+			})
+		});
+ 	})
+}
+
+
+
+//根据第几页页数、uid 获得消息 日报 周报 列表
+Message.getMessagesByMore = function getMessagesByMore(page,perCount,uid,type,callback) {
+	mongodb.open(function(err,db) {
+		if(err) {
+			return callback(err);
+		}
+		db.collection('messages',function(err,collection) {
+			if(err) {
+				mongodb.close();
+				return callback(err);
+			}
+			collection.find({uid:uid,type:type}).skip((page-1)*perCount).limit(perCount).toArray(function(err, data) {
+				mongodb.close();
+				var sData = [];
+				for(var i=0; i<data.length; i++) {
+					var timeStamp = new ObjectID(data[i]['_id'].toString()).getTimestamp();
+					var sTime = new Date(timeStamp).getTime();
+					var obj = {
+						'clickCount' : data[i]['clickCount'] || 0,
+						'mtitle' : data[i]['mtitle'],
+						'mtime' : sTime,
+						'_id' : data[i]['_id'],
+						'uid' : data[i]['uid'],
+						'mcontent' : data[i]['mcontent'],
+						'type' : data[i]['type']
+					}
+					sData.push(obj);
+				}
+				if(err) {
+					return callback(err);
+				}
+				callback(err,sData);
+			})
+		});
+ 	})
+}
+
+
+//获取消息总条数通过类型
+Message.getMessagesCountByType = function getMessagesCount(type,callback) {
+	mongodb.open(function(err,db) {
+		if(err) {
+			return callback(err);
+		}
+		db.collection('messages',function(err,collection) {
+			if(err) {
+				mongodb.close();
+				return callback(err);
+			}
+			collection.find({type:type}).count(function(err,count) {
+				mongodb.close();
+				if(err) {
+					return callback(err);
+				}
+				return callback(err,count);
 			})
 		});
  	})

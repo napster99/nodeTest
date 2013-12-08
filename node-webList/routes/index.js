@@ -14,6 +14,8 @@ module.exports = function(app) {
 	var Message = require('../models/message');
 	var Reply = require('../models/replys');
 	var CommonJS = require('../models/common');
+	var querystring = require('querystring');
+	var url = require('url');
 
 	//登陆拦截器
 	app.get('/*',function(req,res,next) {
@@ -29,7 +31,7 @@ module.exports = function(app) {
 
 	//访问首页
 	app.get('/',function(req, res) {
-		var curPage = 1,perPages = 2;
+		var curPage = 1,perPages = 10;
 		if(req.url.indexOf('?page=') > -1) 
 			curPage = req.url.split('=')[1];
 		//根据curPage 获得message数组
@@ -78,17 +80,34 @@ module.exports = function(app) {
 									objArr.push(obj);
 								}
 
-								//组装成对象，输出到页面
-								res.render('index',{
-									title : '首页',
-									objArr : objArr
-								});
+								
+								if(req.session.user) {
+									//获取积分数
+									User.getScoreByUid(req.session.user.uid,function(err,user) {
+										//组装成对象，输出到页面
+										res.render('index',{
+											title : '首页',
+											objArr : objArr,
+											user : req.session.user,
+											score : user['score']
+										});
+									})
+									
+								}else{
+									//组装成对象，输出到页面
+									res.render('index',{
+										title : '首页',
+										objArr : objArr,
+										user : req.session.user
+									});
+								}
+
+								
 							})
 							
 							
 						}
 					});
-					// console.log(objArr)
 				})
 			}
 		});
@@ -260,7 +279,6 @@ module.exports = function(app) {
 
 	//个人主页
 	app.get('/user/:user', function(req, res) {
-		console.log(req.params.user)
 		res.render('user',{
 			title : 'xx'
 		})
@@ -269,6 +287,233 @@ module.exports = function(app) {
 
 	//话题详细页
 	app.get('/topic/:id',function(req,res) {
+		var mid = req.params.id;
+		var messageDetail = {};
+		console.time('nap')
+
+		Message.getMessageByMid(mid,function(err,data) {
+			if(err) {
+				//TODO
+			} else {
+				/*
+				 * 信息详细页展示  
+				 * 消息标题     消息内容       发布者姓名和uid 发布时间   回复数      回复实体
+				 * mtitle        mcontent       mname muid      mtime     replyCount   mReplyObj
+				 * 	
+				 * 	mReplyObj-->rcontent mid uid  uname rtime 
+ 				 */
+ 				User.getUsersByUids([data['uid']],function(err,user) {
+ 					// console.log(user)
+ 					messageDetail['mtitle'] = data['mtitle'];
+ 					messageDetail['mcontent'] = data['mcontent'];
+ 					messageDetail['mname'] = user[0]['name'];
+ 					messageDetail['muid'] = user[0]['_id'];
+ 					messageDetail['mtime'] = CommonJS.changeTime(data['mtime']);
+ 					messageDetail['mid'] = data['_id'];
+
+ 					Reply.getReplysByMids([mid],function(err,replyArr) {
+						if(err) {
+							//TODO
+						}else{
+							var uidArr = [];
+							for(var i=0; i<replyArr.length; i++) {
+								uidArr.push(replyArr[i]['uid']);
+							}
+							User.getUsersByUids(uidArr,function(err,users) {
+								var tempArr = [];
+								for(var i=0; i<replyArr.length; i++) {
+									var objReply = {
+										'rcontent' : replyArr[i]['rcontent'],
+										'mid' : replyArr[i]['mid'],
+										'uid' : replyArr[i]['uid'],
+										'uname' : User.getUsernameByUid(replyArr[i]['uid'],users),
+										'rtime' : CommonJS.changeTime(replyArr[i]['rtime']) 
+									}
+									tempArr.push(objReply);
+								}
+								messageDetail['mReplyObj'] = tempArr;
+								Message.updateMessagecNumByMid(mid,function(err) {
+										if(err) {
+											//TODO
+										}else{
+											res.render('messageDetail',{
+													'title':messageDetail['mtitle'],
+													'messageDetail' : messageDetail
+												})
+										}
+									});
+								
+							})
+							
+						}
+					})
+ 				});
+				
+
+
+
+			}
+		})
+		console.timeEnd('nap')
+
+		// res.render('messageDetail',{
+		// 	title : '对于链接只取前1k，谁能提供下代码或思路'
+		// });
+		//return res.redirect('/topic/'+req.params.id);
+	});
+
+
+	//发表话题
+	app.get('/createTopic',function(req,res) {
+		res.render('create',{
+			title : '发表话题'
+		});
+		//return res.redirect('/topic/'+req.params.id);
+	});
+
+	//提交话题
+	app.post('/topic/create',function(req,res) {
+		var title = req.body['title'];
+		var content = req.body['content'];
+		var message = new Message();
+		message['mtitle'] = title;
+		message['mcontent'] = content;
+		message['uid'] = req.session.user.uid;
+		message['clickCount'] = 0;
+		message.save(message,function(err,data) {
+			if(err) {
+				req.session.error = err;
+				return res.redirect('/topic/create');
+			}
+			if(data) {
+				return res.redirect('/');
+			}
+		})
+	})
+
+
+	//提交回复
+	app.post('/reply/:mid',function(req,res) {
+		var content = req.body['content'];
+		var mid = req.params.mid;
+		var uid = req.session.user.uid;
+		
+		var reply = new Reply(mid,content,uid);
+
+		reply.save(reply,function(err,reply) {
+			if(err) {
+				//TODO
+			} else {
+				return res.redirect('/topic/'+mid);
+			}
+		})
+
+	})
+
+
+
+	//写日/周报
+	app.get('/addDaily',function(req, res) {
+		res.render('addDaily',{
+			title : '发布日/周报',
+			user : req.session.user
+		});
+	});
+
+	//提交日报周报
+	app.post('/createDaily',function(req,res) {
+		var title = req.body['title'];
+		var content = req.body['content'];
+		var type = req.body['which'];
+		var message = new Message();
+		message['mtitle'] = title;
+		message['mcontent'] = content;
+		message['uid'] = req.session.user.uid;
+		message['clickCount'] = 0;
+		message['type'] = type;
+		message.save(message,function(err,data) {
+			if(err) {
+				req.session.error = err;
+				return res.redirect('/addDaily');
+			}
+			if(data) {
+				return res.redirect('/dailyList/'+req.session.user['uid']);
+			}
+		})
+		
+
+	})
+
+	//日报/周报列表
+	app.get('/dailyList/:uid',function(req,res) {
+		var uid = req.params.uid;
+		User.getUsersByUids([uid],function(err,data) {
+			if(err) {
+
+			}else{
+				res.render('dailyList',{
+					title : '发布日/周报',
+					uid : uid,
+					user : data[0]
+				});
+			}
+		})
+		
+	});
+
+	//ajax获取分页列表
+	app.get('/getDailyAjax',function(req,res) {
+		var pquery = querystring.parse(url.parse(req.url).query);   
+		var perPages = 5;
+		var type = pquery['type'];
+		// getMessagesByMore(page,perCount,uid,type,callback)
+		Message.getMessagesCountByType('day',function(err,dayCount) {
+			Message.getMessagesCountByType('week',function(err,weekCount) {
+				Message.getMessagesByMore(pquery['curPage'],perPages,pquery['uid'],'day',function(err,dayArr) {
+					var dtotalPages,wtotalPages = 1;
+					if(dayCount % perPages == 0 ) {
+						dtotalPages = parseInt(dayCount/perPages);
+					}else{
+						dtotalPages = parseInt(dayCount/perPages) + 1;
+					}
+					if(weekCount % perPages == 0 ) {
+						wtotalPages = parseInt(weekCount/perPages);
+					}else{
+						wtotalPages = parseInt(weekCount/perPages) + 1;
+					}
+					Message.getMessagesByMore(pquery['curPage'],perPages,pquery['uid'],'week',function(err,weekArr) {
+						for(var i=0,len=dayArr.length; i<len; i++) {
+							dayArr[i]['mtime'] = CommonJS.changeTime(dayArr[i]['mtime']);
+						}
+						for(var i=0,len=weekArr.length; i<len; i++) {
+							weekArr[i]['mtime'] = CommonJS.changeTime(weekArr[i]['mtime']);
+						}
+
+						var data = {
+							'type' : type,
+							'day' : {
+								'page' : pquery['curPage'],
+								'totalPages' : dtotalPages,
+								'data' : dayArr,
+							},
+							'week' : {
+								'page' : pquery['curPage'],
+								'totalPages' : wtotalPages,
+								'data' : weekArr,
+							}
+						}
+						res.send(data);
+
+					});
+					
+				})
+			});
+		})
+	})
+
+	
+	//日报周报详细页
+	app.get('/dailyDetail/:id',function(req,res) {
 		var mid = req.params.id;
 		var messageDetail = {};
 		console.time('nap')
@@ -322,7 +567,7 @@ module.exports = function(app) {
 										if(err) {
 											//TODO
 										}else{
-											res.render('messageDetail',{
+											res.render('dailyDetail',{
 													'title':messageDetail['mtitle'],
 													'messageDetail' : messageDetail
 												})
@@ -348,84 +593,15 @@ module.exports = function(app) {
 		//return res.redirect('/topic/'+req.params.id);
 	});
 
+	//更新积分
+	app.get('/updateScore',function(req,res) {
+		var pquery = querystring.parse(url.parse(req.url).query);   
+		var uid = pquery['uid'];
+		var score = pquery['score'];
 
-	//发表话题
-	app.get('/createTopic',function(req,res) {
-		res.render('create',{
-			title : '发表话题'
-		});
-		//return res.redirect('/topic/'+req.params.id);
-	});
-
-	//提交话题
-	app.post('/topic/create',function(req,res) {
-		var title = req.body['title'];
-		var content = req.body['content'];
-		var message = new Message();
-		message['mtitle'] = title;
-		message['mcontent'] = content;
-		message['uid'] = req.session.user.uid;
-		message['clickCount'] = 0;
-		message.save(message,function(err,data) {
-			if(err) {
-				req.session.error = err;
-				return res.redirect('/createTopic');
-			}
-			if(data) {
-				return res.redirect('/');
-			}
+		User.updateScore(uid,score,function() {
+			res.send({'message':'success'});
 		})
-	})
-
-
-	//提交回复
-	app.post('/reply/:mid',function(req,res) {
-		var content = req.body['content'];
-		var mid = req.params.mid;
-		var uid = req.session.user.uid;
-		
-		var reply = new Reply(mid,content,uid);
-		console.log(reply)
-
-		reply.save(reply,function(err,reply) {
-			if(err) {
-				//TODO
-			} else {
-				return res.redirect('/topic/'+mid);
-			}
-		})
-
-	})
-
-
-
-	//写日/周报
-	app.get('/addDaily',function(req, res) {
-		res.render('addDaily',{
-			title : '发布日/周报'
-		});
-	});
-
-	//提交日报周报
-	app.post('/createDaily',function(req,res) {
-		var title = req.body['title'];
-		var content = req.body['content'];
-		var type = req.body['which'];
-		var uid = req.session.user.uid;
-		console.log(title)
-		console.log(content)
-		console.log(type)
-		console.log(uid)
-		// var reply = new Reply(mid,content,uid);
-
-		// reply.save(reply,function(err,reply) {
-		// 	if(err) {
-		// 		//TODO
-		// 	} else {
-		// 		return res.redirect('/topic/'+mid);
-		// 	}
-		// })
-
 	})
 
 };

@@ -9,7 +9,6 @@
 			allowFileManager : true
 		});
 		$('#submit_btn').click(function() {
-			$('#messageContent').val(editor.html());
 			if($('#title').val().replace(/\s*/g,'') === '') {
 				var nickname = $('input[name=which]:checked').attr('nickname');
 				$('#title').val('《'+curTime+'的'+nickname+'》');
@@ -28,6 +27,7 @@
 			// if($('#title').val().replace(/\s*/g,'') === '') {
 			// 	$('#title').val('《'+curTime+'的日报》');
 			// }
+
 		}else{
 			//周报
 			$('#baoTitle').text('发表周报');
