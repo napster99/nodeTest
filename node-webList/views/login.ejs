@@ -7,15 +7,15 @@
 			<label class="control-label" for="username">用户名</label>
 			<div class="controls">
 				<input type="text" class="input-xlarge" id="username" name="username">
-				<% if(locals.error === 'usernotexsit') { %>
-				<div class="alert alert-success" style="display:none;">
+				<%  if(locals.error === 'usernotexsit') { %>
+				<div class="alert alert-error">
 					Error:用户不存在
 				</div>
 				<% } %>
 			</div>
 		</div-->
 		<% if(locals.error === 'usernotexsit') { %>
-			<div class="alert alert-error" style="display:none;">
+			<div class="alert alert-error" >
 				Error:用户不存在
 			</div>
 		<% } %>

@@ -154,10 +154,7 @@ Message.updateMessagecNumByMid = function updateMessagecNumByMid(mid,callback) {
 				if(err) {
 					return callback(err);
 				}
-				console.log(mid)
-				console.log(data['clickCount'])
 				var count = parseInt(data['clickCount']) + 1;
-				console.log(count)
 				collection.update({_id:ObjectID(mid)},{$set:{clickCount:count}},false,true);
 				mongodb.close();
 				callback();

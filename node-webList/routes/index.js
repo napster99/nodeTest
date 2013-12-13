@@ -101,11 +101,7 @@ module.exports = function(app) {
 										user : req.session.user
 									});
 								}
-
-								
 							})
-							
-							
 						}
 					});
 				})
@@ -196,7 +192,7 @@ module.exports = function(app) {
 		}
 		if(!(/^1[3|4|5|8][0-9]\d{4,8}$/.test(mobile))){ 
 			req.session.error = 'mobileformaterror';
-		return res.redirect('/addUser');
+			return res.redirect('/addUser');
 		}
 
 		var newUser = new User({
@@ -224,6 +220,7 @@ module.exports = function(app) {
 
 	app.post('/login',function(req, res) {
 		//生成口令的散列值
+		console.log('生成口令的散列值')
 		var md5 = crypto.createHash('md5');
 		var password = md5.update(req.body.password).digest('base64');
 		User.get(password, function(err, user) {
@@ -231,10 +228,10 @@ module.exports = function(app) {
 				req.session.error = 'usernotexsit';
 				return res.redirect('/login');
 			}
-			// if(user.password != password) {
-			// 	req.session.error = 'pwderror';
-			// 	return res.redirect('/login');
-			// }
+			if(user.password != password) {
+				req.session.error = 'pwderror';
+				return res.redirect('/login');
+			}
 			req.session.user = user;
 			console.log('+++++++++++登入成功++++++++++++++');
 			console.log(req.session.user);
@@ -303,14 +300,12 @@ module.exports = function(app) {
 				 * 	mReplyObj-->rcontent mid uid  uname rtime 
  				 */
  				User.getUsersByUids([data['uid']],function(err,user) {
- 					// console.log(user)
  					messageDetail['mtitle'] = data['mtitle'];
  					messageDetail['mcontent'] = data['mcontent'];
  					messageDetail['mname'] = user[0]['name'];
  					messageDetail['muid'] = user[0]['_id'];
  					messageDetail['mtime'] = CommonJS.changeTime(data['mtime']);
  					messageDetail['mid'] = data['_id'];
-
  					Reply.getReplysByMids([mid],function(err,replyArr) {
 						if(err) {
 							//TODO
@@ -348,10 +343,6 @@ module.exports = function(app) {
 						}
 					})
  				});
-				
-
-
-
 			}
 		})
 		console.timeEnd('nap')
