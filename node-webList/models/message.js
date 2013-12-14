@@ -1,15 +1,30 @@
-var mongodb = require('./db');
-var ObjectID = require("mongodb").ObjectID;
+var dbObj = require('./db');
+//var ObjectID = require("mongodb").ObjectID;
+var mongoose = dbObj.mongoose
+,Schema = dbObj.Schema;
 
-function Message(mid, title, content, uid, time,clickCount,type) {
-	this.mid = mid || '';
-	this.mtitle = title;
-	this.mcontent = content;
-	this.uid = uid;
-	this.mtime = time || +new Date();
-	this.clickCount = clickCount;
-	this.type = type || 'normal';
-};
+
+// function Message(mid, title, content, uid, time,clickCount,type) {
+// 	this.mid = mid || '';
+// 	this.mtitle = title;
+// 	this.mcontent = content;
+// 	this.uid = uid;
+// 	this.mtime = time || +new Date();
+// 	this.clickCount = clickCount;
+// 	this.type = type || 'normal';
+// };
+
+var messageSchema = new Schema({
+  mid:  String,
+  mtitle: String,
+  mcontent:   String,
+  uid    : String,
+  mtime : {type:Date,default:Date.now},
+  clickCount : Number,
+  type : String
+});
+
+var Message = mongoose.model('Message', messageSchema);
 
 module.exports = Message;
 
