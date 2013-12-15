@@ -1,36 +1,77 @@
-<%- include header %>
+<%- include header %>	
+	<div class="tabbable tabs-left" style="margin:10px 0 0;">
+		<ul class="nav nav-tabs" style="max-height:none;">
+                <li class="active"><a href="#lA" data-toggle="tab">成员列表</a></li>
+                <li class=""><a href="#lB" data-toggle="tab">待审核日报</a></li>
+                <li class=""><a href="#lC" data-toggle="tab">其他</a></li>
+              </ul>
+		<div class="tab-content">
+			<div class="tab-pane active" id="lA">
+				<div style="background:#fff">
+				    <table cellspacing="0" class="table" align="center">
+				    	<thead align="center">
+				    		<tr>
+				    			<td colspan="7"><strong>WEB研发一部（前端）成员表</strong>
+				    			<author style="float:right;">
+				    				<strong>负责人：</strong>谢武
+				    			</author>
+				    			</td>
+				    		</tr>
+				    	</thead>
+				    	<tbody align="center">
+							<% for(var i=0; i<users.length; i++) { %>
+								<tr>
+					    			<td><%= users[i]['name'] %></td>
+					    			<td><%= users[i]['mobile'] %></td>
+					    		</tr>
+							<% } %>
+			    		</tbody>
+				    </table>
+				</div>
+			</div>
+			<div class="tab-pane" id="lB">
+				<div id="msgList" style="background:#fff">
+				    <table cellspacing="0" class="table" align="center">
+				    	<thead align="center">
+				    		<tr>
+				    			<td>
+				    				<strong>待审核日报</strong>
+				    			</td>
+				    		</tr>
+				    	</thead>
+				    	<tbody>
+				    		<% for(var i=0; i<messages.length; i++) { %>
+				    			<tr>
+								<td><%= messages[i]['type']%></td>
+				    			<td><a herf="#"><%= messages[i]['mtitle']%></a></td>
+				    			<td><%= messages[i]['mtime']%></td>
+				    			<td><button name="startPassBtn"  type="button" class="btn btn-success" mid="<%= messages[i]['_id']%>">开始审核</button></td>
+				    			</tr>
+							<% } %>
 
-<div>
-	<div style="background:#fff">
-	    <table cellspacing="0" class="table" align="center">
-	    	<thead align="center">
-	    		<tr>
-	    			<td colspan="8"><strong>WEB研发一部（前端）成员表</strong></td>
-	    		</tr>
-	    	</thead>
-	    	<tbody align="center">
-	    		<tr>
-	    			<td colspan="8"><strong>负责人：</strong>
-	    			<% for(var i=0; i<admin.length; i++) { %>
-		    			<%= admin[i]['name'] %>
-		    			<%= admin[i]['mobile'] %>
-					<% } %>
-	    			</td>
-	    		</tr>
-	    		<tr>
-	    			<td colspan="2"><strong>前端开发</strong></td>
-	    		</tr>
-	    		
-				<% for(var i=0; i<users.length; i++) { %>
-					<tr>
-		    			<td><%= users[i]['name'] %></td>
-		    			<td><%= users[i]['mobile'] %></td>
-		    		</tr>
-				<% } %>
-    		</tbody>
-	    </table>
+							<%  if(messages.length == 0) { %>
+								<td>暂无待审核日报</td>
+							<% } %>
+
+			    		</tbody>
+				    </table>
+				</div>
+
+				<div id="msgDetail" class="panel" style="display:none;"> 
+					<div class="inner topic"> 
+						<div id="msgCon"></div>
+						<div class="text-right">
+							<button id="backBtn" type="button" class="btn">返回列表</button>
+							<button id="passBtn" type="button" class="btn btn-success">通过</button>
+							<button id="unPassBtn" type="button" class="btn btn-warning">不通过</button>
+						</div>
+					</div> 
+				</div>
+			</div>
+			<div class="tab-pane" id="lC">
+				<p>其他...</p>
+			</div>
+		</div>
 	</div>
-</div>
-
-
+	<script src="/javascripts/webList.js"></script>
 <%- include footer %>

@@ -10,8 +10,7 @@
 		});
 		$('#submit_btn').click(function() {
 			if($('#title').val().replace(/\s*/g,'') === '') {
-				var nickname = $('input[name=which]:checked').attr('nickname');
-				$('#title').val('《'+curTime+'的'+nickname+'》');
+				$('#title').val('《'+curTime+'的日报》');
 			}
 		});
 	});

@@ -3,7 +3,7 @@ $(function(){
 
 	function showWhich($cur){
 		
-		$('.nav').find('li.active').removeClass('active');
+		$('ul[name=common]').find('li.active').removeClass('active');
 		$cur.addClass('active');
 
 	}
@@ -21,8 +21,14 @@ $(function(){
 		case '/addUser':
 			showWhich($('li[name=addUser]'));
 			break;
+		case '/addDaily':
+			showWhich($('li[name=addDaily]'));
+			break;
+		case '/webList':
+			showWhich($('li[name=webList]'));
+			break;
 		default:
-			$('.nav').find('li.active').removeClass('active');
+			$('ul[name=common]').find('li.active').removeClass('active');
 	}
 	
 	$('.alert').fadeIn(1000,function(){

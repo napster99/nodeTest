@@ -45,7 +45,7 @@ module.exports = function(app) {
 			 */
 			var objArr = [];
 			if(data instanceof Array) {
-				Message.getMessagesCount(function(err,count) {
+				Message.getMessagesCountByType('normal',function(err,count) {
 					if(count % perPages == 0 ) {
 						totalPages = parseInt(count/perPages);
 					}else{
@@ -80,10 +80,9 @@ module.exports = function(app) {
 									objArr.push(obj);
 								}
 
-								
 								if(req.session.user) {
 									//获取积分数
-									User.getScoreByUid(req.session.user.uid,function(err,user) {
+									User.getUserByUid(req.session.user._id,function(err,user) {
 										//组装成对象，输出到页面
 										res.render('index',{
 											title : '首页',
@@ -138,7 +137,7 @@ module.exports = function(app) {
 		
 		if(newPassword != req.session.user.password) {
 			//检查口令是否已经存在
-			User.get(newPassword, function(err, user) {
+			User.getUserByPwd(newPassword, function(err, user) {
 				if(user) {
 					req.session.error = 'passwordisexsit';
 					return res.redirect('/modifyPwd');
@@ -149,7 +148,7 @@ module.exports = function(app) {
 				}
 
 				//如果不存在则更新该用户口令
-				User.set(req.session.user,newPassword,function(err,result) {
+				User.setUserPwd(req.session.user,newPassword,function(err,result) {
 					req.session.success = 'success';
 					return res.redirect('/login');
 				})
@@ -203,27 +202,37 @@ module.exports = function(app) {
 		});
 
 		//将新成员录入数据库
-		newUser.save(function(err) {
+		User.saveUser(newUser,function(err,user) {
 			if(err) {
 				req.session.error = 'saveError';
 				return res.redirect('/addUser');
 			}
-			
 			// req.session.user = newUser;
 			req.session.success = 'saveSuccess';
 			req.session.error = null;
 			
 			res.redirect('/login');
-		});
+		}) 
+		// newUser.save(function(err) {
+		// 	if(err) {
+		// 		req.session.error = 'saveError';
+		// 		return res.redirect('/addUser');
+		// 	}
+			
+		// 	// req.session.user = newUser;
+		// 	req.session.success = 'saveSuccess';
+		// 	req.session.error = null;
+			
+		// 	res.redirect('/login');
+		// });
 
 	});
 
 	app.post('/login',function(req, res) {
 		//生成口令的散列值
-		console.log('生成口令的散列值')
 		var md5 = crypto.createHash('md5');
 		var password = md5.update(req.body.password).digest('base64');
-		User.get(password, function(err, user) {
+		User.getUserByPwd(password, function(err, user) {
 			if(!user) {
 				req.session.error = 'usernotexsit';
 				return res.redirect('/login');
@@ -250,16 +259,45 @@ module.exports = function(app) {
 
 	app.get('/webList' , function(req, res) {
 		var user = new User(req.session.user);
-		user.getUsers(function(err,datas) {
-			user.getAdmins(function(err,data) {
-				res.render('webList', {
-					title : '前端人员名单列表',
-					users : datas,
-					admin : data
+		User.getUsers(function(err,datas) {
+			Message.getUnPassMessages(function(err,messages) {
+				var uids = [];
+				for(var i=0; i<messages.length; i++) {
+					uids.push(messages[i]['uid']);
+				}
+				User.getUsersByUids(uids,function(err,users) {
+					for(var i=0; i<messages.length; i++) {
+						messages[i]['type'] = User.getUsernameByUid(messages[i]['uid'],users);
+						messages[i]['mtime'] = CommonJS.changeTime(messages[i]['mtime']);
+					}
+					res.render('webList', {
+						title : '管理人员',
+						users : datas,
+						messages : messages
+					});
+
 				});
 			})
 		})
 	});	
+
+	app.get('/getDailyDetailForPass',function(req,res) {
+		var pquery = querystring.parse(url.parse(req.url).query);   
+		var mid = pquery['mid'];
+
+		Message.getMessageByMid(mid,function(err,message) {
+			if(!err) {
+				var uid = message['uid'];
+				User.getUsersByUids([uid],function(err,user) {
+					var data = {
+						'uname' : user[0]['name'],
+						'message' : message
+					}
+					res.send(data);
+				})
+			}
+		});
+	});
 
 	// app.post('/post',function(req, res) {
 	// 	var currentUser = req.session.user;
@@ -337,7 +375,6 @@ module.exports = function(app) {
 												})
 										}
 									});
-								
 							})
 							
 						}
@@ -366,12 +403,14 @@ module.exports = function(app) {
 	app.post('/topic/create',function(req,res) {
 		var title = req.body['title'];
 		var content = req.body['content'];
-		var message = new Message();
-		message['mtitle'] = title;
-		message['mcontent'] = content;
-		message['uid'] = req.session.user.uid;
-		message['clickCount'] = 0;
-		message.save(message,function(err,data) {
+		var message = new Message({
+			'mtitle' : title,
+			'mcontent' : content,
+			'uid' : req.session.user._id,
+			'type' : 'normal'
+		});
+
+		Message.saveMessage(message,function(err,data) {
 			if(err) {
 				req.session.error = err;
 				return res.redirect('/topic/create');
@@ -380,18 +419,22 @@ module.exports = function(app) {
 				return res.redirect('/');
 			}
 		})
+		
 	})
-
 
 	//提交回复
 	app.post('/reply/:mid',function(req,res) {
 		var content = req.body['content'];
 		var mid = req.params.mid;
-		var uid = req.session.user.uid;
-		
-		var reply = new Reply(mid,content,uid);
+		var uid = req.session.user._id;
+		console.log('uid'+uid)
+		var reply = new Reply({
+			'mid' : mid,
+			'rcontent' : content,
+			'uid' : uid
+		});
 
-		reply.save(reply,function(err,reply) {
+		Reply.saveReply(reply,function(err,reply) {
 			if(err) {
 				//TODO
 			} else {
@@ -403,47 +446,45 @@ module.exports = function(app) {
 
 
 
-	//写日/周报
+	//写日报
 	app.get('/addDaily',function(req, res) {
 		res.render('addDaily',{
-			title : '发布日/周报',
+			title : '发布日报',
 			user : req.session.user
 		});
 	});
 
-	//提交日报周报
+	//提交日报
 	app.post('/createDaily',function(req,res) {
 		var title = req.body['title'];
 		var content = req.body['content'];
-		var type = req.body['which'];
-		var message = new Message();
-		message['mtitle'] = title;
-		message['mcontent'] = content;
-		message['uid'] = req.session.user.uid;
-		message['clickCount'] = 0;
-		message['type'] = type;
-		message.save(message,function(err,data) {
+		
+		var message = new Message({
+			'mtitle' : title,
+			'mcontent' : content,
+			'uid' : req.session.user._id,
+			'type' : 'day',
+			'pass' : 'waiting'
+		});
+
+		Message.saveMessage(message,function(err,data) {
 			if(err) {
 				req.session.error = err;
 				return res.redirect('/addDaily');
 			}
 			if(data) {
-				return res.redirect('/dailyList/'+req.session.user['uid']);
+				return res.redirect('/dailyList/'+req.session.user['_id']);
 			}
 		})
-		
-
 	})
 
-	//日报/周报列表
+	//日报列表
 	app.get('/dailyList/:uid',function(req,res) {
 		var uid = req.params.uid;
 		User.getUsersByUids([uid],function(err,data) {
-			if(err) {
-
-			}else{
+			if(!err) {
 				res.render('dailyList',{
-					title : '发布日/周报',
+					title : '日报列表',
 					uid : uid,
 					user : data[0]
 				});
@@ -456,54 +497,36 @@ module.exports = function(app) {
 	app.get('/getDailyAjax',function(req,res) {
 		var pquery = querystring.parse(url.parse(req.url).query);   
 		var perPages = 5;
-		var type = pquery['type'];
+		var type = pquery['type'] || 'day';
+		var uid = pquery['uid'] || req.session.user._id;
 		// getMessagesByMore(page,perCount,uid,type,callback)
-		Message.getMessagesCountByType('day',function(err,dayCount) {
-			Message.getMessagesCountByType('week',function(err,weekCount) {
-				Message.getMessagesByMore(pquery['curPage'],perPages,pquery['uid'],'day',function(err,dayArr) {
-					var dtotalPages,wtotalPages = 1;
-					if(dayCount % perPages == 0 ) {
-						dtotalPages = parseInt(dayCount/perPages);
-					}else{
-						dtotalPages = parseInt(dayCount/perPages) + 1;
+		Message.getMessagesCountByMore('day',uid,function(err,dayCount) {
+			Message.getMessagesByMore(pquery['curPage'],perPages,pquery['uid'],'day',function(err,dayArr) {
+				var dtotalPages = 1;
+				if(dayCount % perPages == 0 ) {
+					dtotalPages = parseInt(dayCount/perPages);
+				}else{
+					dtotalPages = parseInt(dayCount/perPages) + 1;
+				}
+				
+				for(var i=0,len=dayArr.length; i<len; i++) {
+					dayArr[i]['mtime'] = CommonJS.changeTime(dayArr[i]['mtime']);
+				}
+				var data = {
+					'type' : type,
+					'day' : {
+						'page' : pquery['curPage'],
+						'totalPages' : dtotalPages,
+						'data' : dayArr,
 					}
-					if(weekCount % perPages == 0 ) {
-						wtotalPages = parseInt(weekCount/perPages);
-					}else{
-						wtotalPages = parseInt(weekCount/perPages) + 1;
-					}
-					Message.getMessagesByMore(pquery['curPage'],perPages,pquery['uid'],'week',function(err,weekArr) {
-						for(var i=0,len=dayArr.length; i<len; i++) {
-							dayArr[i]['mtime'] = CommonJS.changeTime(dayArr[i]['mtime']);
-						}
-						for(var i=0,len=weekArr.length; i<len; i++) {
-							weekArr[i]['mtime'] = CommonJS.changeTime(weekArr[i]['mtime']);
-						}
-
-						var data = {
-							'type' : type,
-							'day' : {
-								'page' : pquery['curPage'],
-								'totalPages' : dtotalPages,
-								'data' : dayArr,
-							},
-							'week' : {
-								'page' : pquery['curPage'],
-								'totalPages' : wtotalPages,
-								'data' : weekArr,
-							}
-						}
-						res.send(data);
-
-					});
-					
-				})
-			});
+				}
+				res.send(data);
+			})
 		})
 	})
 
 	
-	//日报周报详细页
+	//日报详细页
 	app.get('/dailyDetail/:id',function(req,res) {
 		var mid = req.params.id;
 		var messageDetail = {};
@@ -570,18 +593,9 @@ module.exports = function(app) {
 						}
 					})
  				});
-				
-
-
-
 			}
 		})
 		console.timeEnd('nap')
-
-		// res.render('messageDetail',{
-		// 	title : '对于链接只取前1k，谁能提供下代码或思路'
-		// });
-		//return res.redirect('/topic/'+req.params.id);
 	});
 
 	//更新积分
@@ -590,9 +604,52 @@ module.exports = function(app) {
 		var uid = pquery['uid'];
 		var score = pquery['score'];
 
-		User.updateScore(uid,score,function() {
-			res.send({'message':'success'});
+		User.getUserByUid(uid,function(err,user) {
+			if(!err) {
+				score = (+user['score']) + (+score);
+				User.updateScore(uid,score,function(err,rows) {
+					if(rows) {
+						res.send({'message':'success'});
+					}
+				})
+			}
 		})
 	})
+
+	//改变签到状态
+	app.post('/changeSignStatus',function(req,res) {
+		User.changeSignStatus(req.session.user._id,function(err,user) {
+			if(!err && user) {
+				req.session.user = user;
+				res.send();
+			}
+		})
+	})
+
+	//管理员通过审核 【Admin】
+	app.post('/changeMessageStatus',function(req,res) {
+		var mid = req.body['mid'];
+		var uid = req.body['uid'];
+		var status = req.body['status'];
+		Message.changeMessageStatus(mid,status,function(err,message) {
+			if(status === 'passed') {
+				//给成员加积分
+				User.getUserByUid(uid,function(err,user) {
+					if(!err) {
+						var score = (+user['score']) + 2;
+						User.updateScore(uid,score,function(err,rows) {
+							if(rows) {
+								res.send({'message':'success'});
+							}
+						})
+					}
+				})
+			}else{
+				res.send({'message':'success'});
+			}
+		})
+	})
+
+
 
 };

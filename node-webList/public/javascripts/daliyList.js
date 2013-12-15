@@ -11,17 +11,13 @@ $(function() {
 		$weekPagi : $('#weekPagi')
 	}
 
-	var uid = $('#uid').val() || '52973838efeab35c11000002';
+	var uid = $('#uid').val();
 	
 	var Page = {
 
 		init : function(){
 			var self = this;
 			this.getDailyAjax(1,'day');
-			
-			setTimeout(function() {
-				self.getDailyAjax(1,'week');
-			},100);
 		},
 		view : function() {
 
@@ -38,13 +34,15 @@ $(function() {
 				'type' : 'GET',
 				'data' : {curPage : curPage ||1, uid : uid, type : type},
 				'success' : function(data) {
+					console.log(data)
 					if(data['type'] == 'day') {
-						self.renderPagi(data['day']['page'],data['day']['totalPages'],'day');
-						self.renderList(data['day']['data'],'day');
-					}else{
-						console.log(data['week']['data'])
-						self.renderPagi(data['week']['page'],data['week']['totalPages'],'week');
-						self.renderList(data['week']['data'],'week');
+						if(data['day']['data'].length > 0) {
+							self.renderPagi(data['day']['page'],data['day']['totalPages'],'day');
+							self.renderList(data['day']['data'],'day');	
+						}else{
+							ui.$dayContainer.html('<div class="topic_wrap"><em style="color:gray;">暂无日报</em></div>');
+							ui.$dayPagi.hide();
+						}
 					}
 				},
 				'error' : function(err) {
@@ -94,14 +92,23 @@ $(function() {
 		renderList : function(data,type) {
 			var html = '';
 			for(var i=0,len=data.length; i<len; i++) {
+				console.log(data[i]['pass'])
 				html += '<div class="cell">'
 				+'<div class="user_avatar block">'
-				+'	<a target="_blank" href="#" title="xx">'
-				+'		<img src="http://gravatar.qiniudn.com/avatar/1fe5c803a92e0a808a42d0117167275f?size=48">'
+				+'	<a target="_blank" href="javascript:;" title="xx">'
+				+'		<img src="../images/avatar.jpg">'
 				+'	</a>'
 				+'</div>'
-				+'<div class="topic_wrap">'
-				+'	<a href="/dailyDetail/'+data[i]['_id']+'#'+type+'" target="_blank" style="margin-left:10px;">'
+				+'<div class="topic_wrap">';
+				if(data[i]['pass'] == 'passed') {
+					html += '<span style="color:#5cb85c; margin-left:10px;">[已审核]</span>';
+				}else if(data[i]['pass'] == 'waiting') {
+					html += '<span style="color:red; margin-left:10px;">[等待审核]</span>';
+				}else{
+					html += '<span style="color:gray; margin-left:10px;">[审核未通过]</span>';
+				}
+
+				html +='	<a href="/dailyDetail/'+data[i]['_id']+'#'+type+'" target="_blank" style="margin-left:10px;">'
 				+data[i]['mtitle']
 				+'</a>'
 				+'</div>'
@@ -113,7 +120,6 @@ $(function() {
 			}else if(type == 'week'){
 				ui.$weekContainer.html(html);
 			}
-			
 		}
 	}
 
