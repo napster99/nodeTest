@@ -17,7 +17,7 @@ var mongoose = dbObj.mongoose
 var replySchema = new Schema({
   mid:  String,
   rcontent: String,
-  // mcontent:   String,
+  type:   {type:String,default:'normal'},   //normal  admin
   uid    : String,
   rtime : {type:Date,default:Date.now}
 });

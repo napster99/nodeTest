@@ -23,6 +23,13 @@
 				<div class="inner topic">
 					<h3>
 						<%= messageDetail['mtitle']  %>
+						<% if(messageDetail['isPass'] === 'passed') { %>
+							<span style="color:#5cb85c; margin-left:10px;">[已审核]</span>
+						<% } else if(messageDetail['isPass'] === 'waiting') {  %>
+							<span style="color:red; margin-left:10px;">[等待审核]</span>
+						<% } else { %>
+							<span style="color:gray; margin-left:10px;">[审核未通过]</span>
+						<% } %>
 					</h3>
 					<hr>
 					<div class="topic_content">
@@ -33,9 +40,18 @@
 					<hr>
 					<div class="changes">
 						<span class="col_fade">
-							<a class="dark" href="/user/oluul"><%= messageDetail['mname'] %></a> 在 <%= messageDetail['mtime'] %> 发布
+							<a class="dark" href="javascript:;"><%= messageDetail['mname'] %></a> 在 <%= messageDetail['mtime'] %> 发布
 						</span>
 					</div>
+					<% if(messageDetail['isPass'] != 'waiting') { %>
+						<div class="well">
+							管理员点评：<% if(messageDetail['rcontent'] != '') { %>
+											<em><%= messageDetail['rcontent'] %></em>
+										<% } else {%>
+											<em>暂无点评</em>
+										<% } %>
+						</div>
+					<% } %>
 				</div>
 			</div>
 		</div>

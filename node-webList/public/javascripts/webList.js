@@ -11,7 +11,9 @@ $(function() {
 		$backBtn : $('#backBtn'),
 		$msgCon : $('#msgCon'),
 		$msgList : $('#msgList'),
-		$msgDetail : $('#msgDetail')
+		$msgDetail : $('#msgDetail'),
+		$reviews : $('#reviews'),
+		$score : $('#score')
 	}
 
 	var Page = {
@@ -33,13 +35,22 @@ $(function() {
 			ui.$passBtn.on('click','',function() {
 				var mid = ui.$msgDetail.attr('mid');
 				var uid = ui.$msgDetail.attr('uid');
-				self.changeMessageStatus(mid,'passed',uid);
+				var reviews = ui.$reviews.val().replace(/\s*/g,'');
+				var score = ui.$score.val();
+				if(!/^[0-9]*[1-9][0-9]*$/.test(score)) {
+					alert('请输入正整数的积分！');
+					ui.$score.val('').focus();
+					return;
+				}
+				self.changeMessageStatus(mid,'passed',uid,reviews,score);
 			});
 			//不通过
 			ui.$unPassBtn.on('click','',function() {
 				var mid = ui.$msgDetail.attr('mid');
 				var uid = ui.$msgDetail.attr('uid');
-				self.changeMessageStatus(mid,'unpass',uid);
+				var reviews = ui.$reviews.val().replace(/\s*/g,'');
+				var score = ui.$score.val();
+				self.changeMessageStatus(mid,'unpass',uid,reviews,score);
 			});
 			//返回列表
 			ui.$backBtn.on('click','',function() {
@@ -48,13 +59,14 @@ $(function() {
 			})
 		},
 
-		changeMessageStatus : function(mid,status,uid) {
+		changeMessageStatus : function(mid,status,uid,reviews,score) {
 			var options = {
 				'url' : '/changeMessageStatus',
 				'dataType' : 'json',
 				'type' : 'POST',
-				'data' : {mid : mid,status : status ,uid : uid},
+				'data' : {mid : mid,status : status ,uid : uid,reviews:reviews,score:score},
 				'success' : function(data) {
+					console.log(data)
 					if(data['message'] == 'success') {
 						window.location.href = window.location.href;
 					}

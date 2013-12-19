@@ -1,10 +1,11 @@
 <%- include header %>	
 	<div class="tabbable tabs-left" style="margin:10px 0 0;">
-		<ul class="nav nav-tabs" style="max-height:none;">
+			<ul class="nav nav-tabs" style="max-height:none;">
                 <li class="active"><a href="#lA" data-toggle="tab">成员列表</a></li>
                 <li class=""><a href="#lB" data-toggle="tab">待审核日报</a></li>
-                <li class=""><a href="#lC" data-toggle="tab">其他</a></li>
-              </ul>
+                <li class=""><a href="#lC" data-toggle="tab">话题管理</a></li>
+               	<li class=""><a href="#lD" data-toggle="tab">积分日志</a></li>
+            </ul>
 		<div class="tab-content">
 			<div class="tab-pane active" id="lA">
 				<div style="background:#fff">
@@ -60,7 +61,15 @@
 				<div id="msgDetail" class="panel" style="display:none;"> 
 					<div class="inner topic"> 
 						<div id="msgCon"></div>
+						<div class="well">
+							<textarea id="reviews" style="width:99%;" rows="3" placeholder="管理员要说点什么吗？"></textarea>
+						</div>
 						<div class="text-right">
+							<div style="float:left;">
+								<label style="display:inline;">悬赏积分：</label>
+								<input id="score" type="text" style="width:50px; vertical-align:top;">
+							</div>
+							
 							<button id="backBtn" type="button" class="btn">返回列表</button>
 							<button id="passBtn" type="button" class="btn btn-success">通过</button>
 							<button id="unPassBtn" type="button" class="btn btn-warning">不通过</button>
@@ -69,7 +78,39 @@
 				</div>
 			</div>
 			<div class="tab-pane" id="lC">
-				<p>其他...</p>
+				<table cellspacing="0" class="table" align="center">
+			    	<thead align="center">
+			    		<tr>
+			    			<td>
+			    				<strong>话题管理</strong>
+			    			</td>
+			    		</tr>
+			    	</thead>
+			    	<tbody>
+			    			<tr>
+								<td>正在努力开发中...</td>
+			    			</tr>
+		    		</tbody>
+			    </table>
+			</div>
+			<div class="tab-pane" id="lD">
+				<table cellspacing="0" class="table" align="center">
+			    	<thead align="center">
+			    		<tr>
+			    			<td>
+			    				<strong>积分日志</strong>
+			    			</td>
+			    		</tr>
+			    	</thead>
+			    	<tbody>
+			    			<tr>
+								<td>xxxx</td>
+				    			<td>飞沃尔沃</td>
+				    			<td>erwr </td>
+				    			<td>斯蒂芬斯蒂芬</td>
+			    			</tr>
+		    		</tbody>
+			    </table>
 			</div>
 		</div>
 	</div>

@@ -543,11 +543,11 @@ module.exports = function(app) {
 				 * 	
 				 * 	mReplyObj-->rcontent mid uid  uname rtime 
  				 */
- 				 // console.log(data)
  				User.getUsersByUids([data['uid']],function(err,user) {
  					// console.log(user)
  					messageDetail['mtitle'] = data['mtitle'];
  					messageDetail['mcontent'] = data['mcontent'];
+ 					messageDetail['isPass'] = data['pass'];
  					messageDetail['mname'] = user[0]['name'];
  					messageDetail['muid'] = user[0]['_id'];
  					messageDetail['mtime'] = CommonJS.changeTime(data['mtime']);
@@ -557,38 +557,21 @@ module.exports = function(app) {
 						if(err) {
 							//TODO
 						}else{
-							var uidArr = [];
-							for(var i=0; i<replyArr.length; i++) {
-								uidArr.push(replyArr[i]['uid']);
+							if(replyArr.length > 0 && replyArr[0]['type'] === 'admin') {
+								messageDetail['rcontent'] = replyArr[0]['rcontent'];
+								messageDetail['rtime'] = replyArr[0]['rtime'];
+
+								res.render('dailyDetail',{
+									'title':messageDetail['mtitle'],
+									'messageDetail' : messageDetail
+								})
+							} else {
+								res.render('dailyDetail',{
+									'title':messageDetail['mtitle'],
+									'messageDetail' : messageDetail
+								})
 							}
-							User.getUsersByUids(uidArr,function(err,users) {
-								var tempArr = [];
-								for(var i=0; i<replyArr.length; i++) {
-									var objReply = {
-										'rcontent' : replyArr[i]['rcontent'],
-										'mid' : replyArr[i]['mid'],
-										'uid' : replyArr[i]['uid'],
-										'uname' : User.getUsernameByUid(replyArr[i]['uid'],users),
-										'rtime' : CommonJS.changeTime(replyArr[i]['rtime']) 
-									}
-									tempArr.push(objReply);
-								}
-								messageDetail['mReplyObj'] = tempArr;
-								// console.log('----------result----------------')
-								// console.log(tempArr)
-								// console.log('----------result----------------')
-								Message.updateMessagecNumByMid(mid,function(err) {
-										if(err) {
-											//TODO
-										}else{
-											res.render('dailyDetail',{
-													'title':messageDetail['mtitle'],
-													'messageDetail' : messageDetail
-												})
-										}
-									});
-								
-							})
+							
 							
 						}
 					})
@@ -631,22 +614,38 @@ module.exports = function(app) {
 		var mid = req.body['mid'];
 		var uid = req.body['uid'];
 		var status = req.body['status'];
+		var reviews = req.body['reviews'];
+		var score = req.body['score'];
+
 		Message.changeMessageStatus(mid,status,function(err,message) {
-			if(status === 'passed') {
-				//给成员加积分
-				User.getUserByUid(uid,function(err,user) {
-					if(!err) {
-						var score = (+user['score']) + 2;
-						User.updateScore(uid,score,function(err,rows) {
-							if(rows) {
-								res.send({'message':'success'});
-							}
-						})
-					}
-				})
-			}else{
-				res.send({'message':'success'});
-			}
+				//如果管理员有点评
+				if(reviews != '') {
+					var reply = new Reply({
+						'mid' : mid,
+						'rcontent' : reviews,
+						'uid' : uid,
+						'type' : 'admin'
+					});
+					Reply.saveReply(reply,function(err,reply) {
+						if(status === 'passed') {
+							//给成员加积分
+							User.getUserByUid(uid,function(err,user) {
+								if(!err) {
+									score = (+user['score']) + (+score);
+									User.updateScore(uid,score,function(err,rows) {
+										if(!err) {
+											res.send({'message':'success'});
+										}
+									})
+								}
+							})
+						} else {
+							//不通过
+							res.send({'message':'success'});
+						}
+
+					})
+				}
 		})
 	})
 
