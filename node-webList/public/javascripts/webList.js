@@ -21,6 +21,7 @@ $(function() {
 			var self = this;
 			this.view();
 			this.addEventListener();
+			this.initJsChart();
 		},
 		view : function() {
 

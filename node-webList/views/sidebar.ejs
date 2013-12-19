@@ -25,7 +25,6 @@
 					<a class="dark" href="/user/napster99"> <%= user.name %></a>
 					<input id="signStatus" type="hidden" value="<%= user['flag']['sign'] %>" />
 					<button id="signIn" class="btn btn-success">每天签到</button>
-
 				</span>
 
 				<div class="board clearfix">
@@ -50,6 +49,11 @@
 	  </div>
 
 	<% } %>
+	  <div class="panel">
+	      <div class="inner">
+	         <div id="graph"></div>
+	      </div>
+	  </div>
 </div>
 
 <!-- S 弹窗-->

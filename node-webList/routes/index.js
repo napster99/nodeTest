@@ -22,8 +22,7 @@ module.exports = function(app) {
 		req.session.error = null;
 		req.session.success = null;
 		var url = req.originalUrl;
-
-	    if (url != '/addUser' && url != '/login' && url != '/' && url.indexOf('/topic/') < 0 && url.indexOf('?page=') < 0 && url !='/createTopic' && !req.session.user) {
+	    if (url != '/addUser' && url != '/login' && url != '/' && url.indexOf('/topic/') < 0 && url.indexOf('?page=') < 0 && url !='/createTopic' && url !='/getRanking' && !req.session.user) {
 	        return res.redirect('/login');
 	    }
 	    next();
@@ -427,7 +426,6 @@ module.exports = function(app) {
 		var content = req.body['content'];
 		var mid = req.params.mid;
 		var uid = req.session.user._id;
-		console.log('uid'+uid)
 		var reply = new Reply({
 			'mid' : mid,
 			'rcontent' : content,
@@ -443,8 +441,6 @@ module.exports = function(app) {
 		})
 
 	})
-
-
 
 	//写日报
 	app.get('/addDaily',function(req, res) {
@@ -544,7 +540,6 @@ module.exports = function(app) {
 				 * 	mReplyObj-->rcontent mid uid  uname rtime 
  				 */
  				User.getUsersByUids([data['uid']],function(err,user) {
- 					// console.log(user)
  					messageDetail['mtitle'] = data['mtitle'];
  					messageDetail['mcontent'] = data['mcontent'];
  					messageDetail['isPass'] = data['pass'];
@@ -571,8 +566,6 @@ module.exports = function(app) {
 									'messageDetail' : messageDetail
 								})
 							}
-							
-							
 						}
 					})
  				});
@@ -618,36 +611,44 @@ module.exports = function(app) {
 		var score = req.body['score'];
 
 		Message.changeMessageStatus(mid,status,function(err,message) {
-				//如果管理员有点评
-				if(reviews != '') {
-					var reply = new Reply({
-						'mid' : mid,
-						'rcontent' : reviews,
-						'uid' : uid,
-						'type' : 'admin'
-					});
-					Reply.saveReply(reply,function(err,reply) {
-						if(status === 'passed') {
-							//给成员加积分
-							User.getUserByUid(uid,function(err,user) {
-								if(!err) {
-									score = (+user['score']) + (+score);
-									User.updateScore(uid,score,function(err,rows) {
-										if(!err) {
-											res.send({'message':'success'});
-										}
-									})
-								}
-							})
-						} else {
-							//不通过
-							res.send({'message':'success'});
-						}
-
-					})
-				}
+			//如果管理员有点评
+			if(reviews != '') {
+				var reply = new Reply({
+					'mid' : mid,
+					'rcontent' : reviews,
+					'uid' : uid,
+					'type' : 'admin'
+				});
+				Reply.saveReply(reply,function(err,reply) {
+					if(status === 'passed') {
+						//给成员加积分
+						User.getUserByUid(uid,function(err,user) {
+							if(!err) {
+								score = (+user['score']) + (+score);
+								User.updateScore(uid,score,function(err,rows) {
+									if(!err) {
+										res.send({'message':'success'});
+									}
+								})
+							}
+						})
+					} else {
+						//不通过
+						res.send({'message':'success'});
+					}
+				})
+			}
 		})
 	})
+
+	//获取积分排行榜
+	app.get('/getRanking',function(req,res) {
+		User.getUsers(function(err,data) {
+			if(!err) {
+				res.send(data);
+			}
+		});
+	});
 
 
 
