@@ -32,7 +32,6 @@ $(function() {
 			});
 		},
 		sendAjax : function(uid,score) {
-			console.log([uid,score])
 			var self = this;
 			var options = {
 				'url' : '/updateScore',

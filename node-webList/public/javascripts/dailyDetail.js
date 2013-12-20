@@ -18,7 +18,7 @@ $(function() {
 		$theContent : $('#theContent')
 	}
 	var uid = $('#uid').val();
-	var editor = null;
+	// var editor = null;
 
 	var Page = {
 		init : function() {
@@ -27,25 +27,27 @@ $(function() {
 		},
 		view : function() {
 
+			// KindEditor.ready(function(K) {
+			// 	editor = K.create('textarea[name="content"]', {
+			// 		allowFileManager : true
+			// 	});
+			// });
 
-			KindEditor.ready(function(K) {
-				editor = K.create('textarea[name="content"]', {
-					allowFileManager : true
-				});
-			});
-
-			
 		},
 		addEventListener : function() {
 			var self = this;
 			ui.$editBtn.on('click','',function() {
 				ui.$showArea.hide();
 				ui.$editArea.show();
-				var html = ui.$theContent.val();
-				console.log(editor)
-				editor.html('HTML内容');
+				var html = ui.$theContent.val()
+				KindEditor.ready(function(K) {
+					editor = K.create('textarea[name="content"]', {
+						allowFileManager : true
+					});
+					editor.html(html)
+				});
 			});
-
+			
 			ui.$saveBtn.on('click','',function() {
 				self.sendSaveAjax();
 			});
