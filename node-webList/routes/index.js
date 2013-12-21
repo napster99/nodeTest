@@ -13,6 +13,7 @@ module.exports = function(app) {
 	var User = require('../models/user');
 	var Message = require('../models/message');
 	var Reply = require('../models/replys');
+	var LogScore = require('../models/logs');
 	var CommonJS = require('../models/common');
 	var querystring = require('querystring');
 	var url = require('url');
@@ -59,7 +60,6 @@ module.exports = function(app) {
 						if(err) {
 							//TODO 查询回复数出错
 						}else{
-
 							User.getUsersByUids(uidsArr,function(err,userArr) {
 								for(var i=0; i<data.length; i++) {
 									//根据message数组不同元素，获得元素对应的回复数
@@ -84,7 +84,7 @@ module.exports = function(app) {
 									User.getUserByUid(req.session.user._id,function(err,user) {
 										//组装成对象，输出到页面
 										res.render('index',{
-											title : '首页',
+											title : '边锋前端社区',
 											objArr : objArr,
 											user : req.session.user,
 											score : user['score']
@@ -94,7 +94,7 @@ module.exports = function(app) {
 								}else{
 									//组装成对象，输出到页面
 									res.render('index',{
-										title : '首页',
+										title : '边锋前端社区',
 										objArr : objArr,
 										user : req.session.user
 									});
@@ -547,7 +547,6 @@ module.exports = function(app) {
  					messageDetail['muid'] = user[0]['_id'];
  					messageDetail['mtime'] = CommonJS.changeTime(data['mtime']);
  					messageDetail['mid'] = data['_id'];
-
  					Reply.getReplysByMids([mid],function(err,replyArr) {
 						if(err) {
 							//TODO
@@ -555,7 +554,9 @@ module.exports = function(app) {
 							if(replyArr.length > 0 && replyArr[0]['type'] === 'admin') {
 								messageDetail['rcontent'] = replyArr[0]['rcontent'];
 								messageDetail['rtime'] = replyArr[0]['rtime'];
-
+								console.log('=======')
+								console.log(replyArr[0]);
+								console.log('=======')
 								res.render('dailyDetail',{
 									'title':messageDetail['mtitle'],
 									'messageDetail' : messageDetail
@@ -609,7 +610,7 @@ module.exports = function(app) {
 		var status = req.body['status'];
 		var reviews = req.body['reviews'];
 		var score = req.body['score'];
-
+		
 		Message.changeMessageStatus(mid,status,function(err,message) {
 			//如果管理员有点评
 			if(reviews != '') {
@@ -619,36 +620,77 @@ module.exports = function(app) {
 					'uid' : uid,
 					'type' : 'admin'
 				});
-				Reply.saveReply(reply,function(err,reply) {
-					if(status === 'passed') {
-						//给成员加积分
-						User.getUserByUid(uid,function(err,user) {
-							if(!err) {
-								score = (+user['score']) + (+score);
-								User.updateScore(uid,score,function(err,rows) {
+
+				Reply.getReplysByMids([mid],function(err,docs) {
+					if(docs.length == 0) {
+						Reply.saveReply(reply,function(err,message) {
+							if(status === 'passed') {
+								//给成员加积分
+								User.getUserByUid(uid,function(err,user) {
 									if(!err) {
-										res.send({'message':'success'});
+										score = (+user['score']) + (+score);
+										User.updateScore(uid,score,function(err,rows) {
+											if(!err) {
+												res.send({'message':'success'});
+											}
+										})
 									}
 								})
+							} else {
+								//不通过
+								res.send({'message':'success'});
+							}
+						});
+					} else {
+						Reply.updateDailyComment(mid,reviews,function(err,reply) {
+							if(status === 'passed') {
+								//给成员加积分
+								User.getUserByUid(uid,function(err,user) {
+									if(!err) {
+										score = (+user['score']) + (+score);
+										User.updateScore(uid,score,function(err,rows) {
+											if(!err) {
+												res.send({'message':'success'});
+											}
+										})
+									}
+								})
+							} else {
+								//不通过
+								res.send({'message':'success'});
 							}
 						})
-					} else {
-						//不通过
-						res.send({'message':'success'});
 					}
-				})
+				});
 			}
 		})
 	})
 
 	//获取积分排行榜
 	app.get('/getRanking',function(req,res) {
-		User.getUsers(function(err,data) {
+		User.getRanking(function(err,data) {
 			if(!err) {
 				res.send(data);
 			}
 		});
-	});
+	});	
+
+	//修改没审核通过的日志
+	app.post('/modifyDaily',function(req,res) {
+		var mid = req.body['mid'];
+		var uid = req.body['uid'];
+		var content = req.body['content'];
+
+		Message.updateMessageContentByMid(mid,content,function(err,rows) {
+			if(rows > 0 ) {
+				Message.changeMessageStatus(mid,'waiting',function(err,data) {
+					if(!err) {
+						res.send({'message':'success'});
+					}
+				});
+			}
+		});
+	})
 
 
 

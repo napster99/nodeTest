@@ -93,6 +93,16 @@ messageSchema.static('changeMessageStatus',function(mid,status,callback) {
 	}
 )
 
+//通过mid更新日报内容
+messageSchema.static('updateMessageContentByMid',function(mid,content,callback) {
+	var self = this;
+	return this.where({'_id':mid}).findOne(function(err,message) {
+			self.update({'_id':mid},{'mcontent':content},function(err,row) {
+				callback(err,row);
+			})
+		})
+	}
+)
 
 var Message = mongoose.model('Message', messageSchema);
 

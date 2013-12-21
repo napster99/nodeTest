@@ -21,9 +21,14 @@ $(function() {
 			var self = this;
 			this.view();
 			this.addEventListener();
-			this.initJsChart();
+			// this.initJsChart();
 		},
 		view : function() {
+
+
+
+			
+
 
 		},
 		addEventListener : function() {
@@ -112,6 +117,54 @@ $(function() {
 			ui.$msgDetail.attr('mid',message['_id']).attr('uid',message['uid']);
 			ui.$msgList.hide();
 			ui.$msgDetail.show();
+		},
+
+		initJsChart : function() {
+			var options = {
+				'url' : '/getRanking',
+				'dataType' : 'json',
+				'type' : 'GET',
+				'success' : function(data) {
+					var usersArr = [],colorsArr = [];
+					for(var i=0; i<data.length; i++) {
+						usersArr.push([data[i]['name'] || '--' ,data[i]['score']]);
+						colorsArr.push('#81C714');
+					}
+					var myData = new Array(usersArr);
+					// var colors = ['#AF0202', '#EC7A00', '#FCD200', '#81C714'];
+					var myChart = new JSChart('graph', 'bar');
+					myChart.setDataArray(myData);
+					myChart.colorizeBars(colorsArr);
+					myChart.setTitle('成员积分排行榜');
+					myChart.setTitleColor('#8E8E8E');
+					myChart.setAxisNameX('');
+					myChart.setAxisNameY('%');
+					myChart.setAxisColor('#C4C4C4');
+					myChart.setAxisNameFontSize(16);
+					myChart.setAxisNameColor('#999');
+					myChart.setAxisValuesColor('#7E7E7E');
+					myChart.setBarValuesColor('#7E7E7E');
+					myChart.setAxisPaddingTop(60);
+					myChart.setAxisPaddingRight(140);
+					myChart.setAxisPaddingLeft(150);
+					myChart.setAxisPaddingBottom(40);
+					myChart.setTextPaddingLeft(105);
+					myChart.setTitleFontSize(11);
+					myChart.setBarBorderWidth(1);
+					myChart.setBarBorderColor('#C4C4C4');
+					myChart.setBarSpacingRatio(50);
+					myChart.setGrid(false);
+					myChart.setSize(616, 321);
+					myChart.setBackgroundImage('chart_bg.jpg');
+					myChart.draw();
+					
+				},
+				'error' : function(err) {
+					console.log(err)
+				}
+			}
+			$.ajax(options);
+			
 		}
 	}
 

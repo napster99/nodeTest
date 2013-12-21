@@ -4,14 +4,8 @@ var mongoose = dbObj.mongoose
 ,Schema = mongoose.Schema
 ,ObjectID = mongoose.Schema.Types.ObjectId;
 
-// function User(user) {
-// 	this.name = user.name;
-// 	this.password = user.password;
-// 	this.role = user.role;
-// 	this.mobile = user.mobile;
-// 	this.uid = user._id;
-// 	this.score = user.score || 0;
-// };
+var LogScore = require('./logs');
+
 
 var userSchema = new Schema({
   name:  String,
@@ -63,9 +57,24 @@ userSchema.static('setUserPwd',function(user,newPassword,callback) {
 
 //通过uids（数组）获取用户信息
 userSchema.static('getUsersByUids',function(uids,callback) {
-	// for(var i=0; i<uids.length; i++) {
-	// 	uids[i] = ObjectID(uids[i]);
-	// }
+	
+	// name:  String,
+  // uid: String,
+  // role:   String,
+  // time : {type:Date,default:Date.now},
+  // score : {type:Number,default : 0},
+  // type : {type:Number,default : 1}    //1:日报  2:周报  3:签到    ...
+
+
+	var logScore = new LogScore({
+
+	});
+	// console.log('===================')
+	// console.log(LogScore)
+	// console.log('===================')
+
+	LogScore.saveLogScore();
+
 	return this.find({ "_id" : { $in : uids } },function(err,users) {
 		callback(err,users);
 	})
@@ -92,6 +101,9 @@ userSchema.static('getUserByUid', function(uid,callback) {
 
 //更新积分
 userSchema.static('updateScore',function(uid,score,callback) {
+
+
+
 	return this.findOneAndUpdate({ "_id" : uid }, { score: score },  function(err,user) {
 			callback(err,user);
 		})
@@ -105,6 +117,11 @@ userSchema.static('changeSignStatus', function(uid,callback) {
 	return this.findOneAndUpdate({ "_id" : uid }, { 'flag.sign': sign },  function(err,user) {
 			callback(err,user);
 		})
+});
+
+//积分排行榜
+userSchema.static('getRanking',function(callback) {
+	return this.find().sort({'score':-1}).exec(callback);;
 });
 
 

@@ -11,7 +11,13 @@ var CommonJS = {
 			return hour == 0? '1小时前': hour+'小时前';
 		}
 		return new Date(time).format('yyyy-MM-dd');
+	},
+	logsType : {
+		1 : '日报',
+		2 : '周报',
+		3 : '签到'
 	}
+
 }
 
 

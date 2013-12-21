@@ -73,32 +73,23 @@ $(function() {
 				'dataType' : 'json',
 				'type' : 'GET',
 				'success' : function(data) {
-					var usersArr = [], colorsArr = [];
-					for(var i=0; i<data.length; i++) {
-						usersArr.push([data[i]['name'],data[i]['score']]);
-						colorsArr.push('#66FF99');
+					var usersArr = [];
+					for(var i=0; i<3; i++) {
+						usersArr.push([data[i]['name'] || '--' ,data[i]['score']]);
 					}
-					var myChart = new JSChart('graph', 'bar', '');
-					myChart.setDataArray(usersArr);
-					myChart.colorize(colorsArr);
+
+					var myData = new Array(usersArr[0], usersArr[1], usersArr[2]);
+					var colors = ['#FACC00', '#FB9900', '#FB6600'];
+					var myChart = new JSChart('graph', 'pie');
+					myChart.setDataArray(myData);
+					myChart.colorizePie(colors);
+					myChart.setTitle('前端社区积分前三排行榜');
+					myChart.setTitleColor('#857D7D');
+					myChart.setPieUnitsColor('#9B9B9B');
+					myChart.setPieValuesColor('#6A0000');
 					myChart.setSize(270, 300);
-					myChart.setBarValues(false);
-					myChart.setBarSpacingRatio(45);
-					myChart.setBarOpacity(0.8);
-					myChart.setBarBorderWidth(0);
-					myChart.setTitle('前端社区积分排行榜');
-					myChart.setTitleFontSize(12);
-					myChart.setTitleColor('#08c');
-					myChart.setAxisValuesColor('#666');
-					myChart.setAxisNameX('');
-					myChart.setAxisNameY('');
-					myChart.setAxisColor('#08c');
-					myChart.setAxisNameColor('#666');
-					myChart.setGridOpacity(0.8);
-					myChart.setGridColor('#D3B5B4');
-					myChart.setIntervalEndY(50);
-					myChart.setAxisReversed(true);
 					myChart.draw();
+					
 				},
 				'error' : function(err) {
 					console.log(err)
