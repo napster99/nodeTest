@@ -57,24 +57,6 @@ userSchema.static('setUserPwd',function(user,newPassword,callback) {
 
 //通过uids（数组）获取用户信息
 userSchema.static('getUsersByUids',function(uids,callback) {
-	
-	// name:  String,
-  // uid: String,
-  // role:   String,
-  // time : {type:Date,default:Date.now},
-  // score : {type:Number,default : 0},
-  // type : {type:Number,default : 1}    //1:日报  2:周报  3:签到    ...
-
-
-	var logScore = new LogScore({
-
-	});
-	// console.log('===================')
-	// console.log(LogScore)
-	// console.log('===================')
-
-	LogScore.saveLogScore();
-
 	return this.find({ "_id" : { $in : uids } },function(err,users) {
 		callback(err,users);
 	})
@@ -92,7 +74,6 @@ userSchema.static('getUsernameByUid',function(uid,users) {
 
 //通过uid获取User对象
 userSchema.static('getUserByUid', function(uid,callback) {
-
 	return this.findOne({ "_id" :  uid },function(err,user) {
 		callback(err,user);
 	})
@@ -100,10 +81,32 @@ userSchema.static('getUserByUid', function(uid,callback) {
 
 
 //更新积分
-userSchema.static('updateScore',function(uid,score,callback) {
+userSchema.static('updateScore',function(uid,score,logOptions,callback) {
+
+		// name:  String,
+  // uid: String,
+  // role:   String,
+  // time : {type:Date,default:Date.now},
+  // score : {type:Number,default : 0},
+  // type : {type:Number,default : 1}    //1:日报  2:周报  3:签到    ...
 
 
+	var logScore = new LogScore({
+		name : logOptions['name'],
+		uid : logOptions['uid'],
+		score : logOptions['score'],
+		type : logOptions['type']
+	});
+	// console.log('===================')
+	// console.log(LogScore)
+	// console.log('===================')
 
+	LogScore.saveLogScore(logScore,function(err,data) {
+		if(!err) {
+			console.log('日志已经写入...'+data)
+		}
+	});
+	
 	return this.findOneAndUpdate({ "_id" : uid }, { score: score },  function(err,user) {
 			callback(err,user);
 		})

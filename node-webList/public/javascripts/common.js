@@ -63,3 +63,26 @@ Date.prototype.format =function(format){
 		("00"+ o[k]).substr((""+ o[k]).length));
 	return format;
 }
+
+
+var CommonJS = {
+	changeTime : function(time) {
+		var curTime = +new Date();
+		time = +new Date(time);
+		
+		if(curTime - time <= 60*60) {
+			return '1小时前';
+		}
+		var hour = parseInt((curTime-time)/(1000*60*60));
+		if(hour <= 24) {
+			return hour == 0? '1小时前': hour+'小时前';
+		}
+		return new Date(time).format('yyyy-MM-dd');
+	},
+	logsType : {
+		1 : '日报',
+		2 : '周报',
+		3 : '签到'
+	}
+
+}

@@ -13,7 +13,9 @@ $(function() {
 		$msgList : $('#msgList'),
 		$msgDetail : $('#msgDetail'),
 		$reviews : $('#reviews'),
-		$score : $('#score')
+		$score : $('#score'),
+		$logPagina : $('#logPagina'),
+		$logContent : $('#logContent')
 	}
 
 	var Page = {
@@ -21,7 +23,8 @@ $(function() {
 			var self = this;
 			this.view();
 			this.addEventListener();
-			// this.initJsChart();
+			this.initJsChart();
+			this.getLogScoreAjax();
 		},
 		view : function() {
 
@@ -130,10 +133,9 @@ $(function() {
 						usersArr.push([data[i]['name'] || '--' ,data[i]['score']]);
 						colorsArr.push('#81C714');
 					}
-					var myData = new Array(usersArr);
 					// var colors = ['#AF0202', '#EC7A00', '#FCD200', '#81C714'];
 					var myChart = new JSChart('graph', 'bar');
-					myChart.setDataArray(myData);
+					myChart.setDataArray(usersArr);
 					myChart.colorizeBars(colorsArr);
 					myChart.setTitle('成员积分排行榜');
 					myChart.setTitleColor('#8E8E8E');
@@ -155,7 +157,6 @@ $(function() {
 					myChart.setBarSpacingRatio(50);
 					myChart.setGrid(false);
 					myChart.setSize(616, 321);
-					myChart.setBackgroundImage('chart_bg.jpg');
 					myChart.draw();
 					
 				},
@@ -165,6 +166,55 @@ $(function() {
 			}
 			$.ajax(options);
 			
+		},
+		//积分日志分页
+		renderPagi : function(page,totalPages,which) {
+			var self = this;
+			 var options = { 
+                   currentPage: page || 1, 
+                    totalPages: totalPages, 
+                 numberOfPages:5, 
+                onPageClicked : function(event,originalEvent,type,page) { 
+                    var tid = $(this)[0].id;
+                    self.getLogScoreAjax(page);
+                  } 
+              } 
+              ui.$logPagina.bootstrapPaginator(options); 
+		},
+		getLogScoreAjax : function(curPage) {
+			var self = this;
+			var options = {
+				'url' : '/getLogScoreAjax',
+				'dataType' : 'json',
+				'type' : 'GET',
+				'data' : {curPage : curPage||1},
+				'success' : function(data) {
+					console.log(data)
+					if(data['data'].length > 0) {
+						self.renderPagi(data['page'],data['totalPages']);
+						self.renderLogScoreList(data['data']);	
+					}else{
+						ui.$logContent.html('<tr><td>暂无积分日志</td></tr>');
+						ui.$logPagina.hide();
+					}
+				},
+				'error' : function(err) {
+					console.log(err)
+				}
+			}
+			$.ajax(options);
+		},
+		renderLogScoreList : function(data){
+			var html = "";
+			for(var i=0,len=data.length; i<len; i++) {
+				html += '<tr uid="'+data[i]['uid']+'">'
+				+'<td>'+data[i]['name']+'</td>'
+				+'<td>通过'+CommonJS.logsType[data[i]['type']]+'</td>'
+				+'<td>'+data[i]['score']+'分</td>'
+				+'<td>'+CommonJS.changeTime(data[i]['time'],'yyyy-MM-dd HH:mm:ss')+'</td>'
+				+'</tr>';
+			}
+			ui.$logContent.html(html);
 		}
 	}
 

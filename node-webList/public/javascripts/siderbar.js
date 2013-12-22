@@ -73,6 +73,7 @@ $(function() {
 				'dataType' : 'json',
 				'type' : 'GET',
 				'success' : function(data) {
+					console.log(data)
 					var usersArr = [];
 					for(var i=0; i<3; i++) {
 						usersArr.push([data[i]['name'] || '--' ,data[i]['score']]);

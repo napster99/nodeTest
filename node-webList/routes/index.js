@@ -583,8 +583,14 @@ module.exports = function(app) {
 
 		User.getUserByUid(uid,function(err,user) {
 			if(!err) {
+				var logOptions = {
+					'name' : user['name'],
+					'uid' : uid,
+					'score' : score,
+					'type' : 3
+				}
 				score = (+user['score']) + (+score);
-				User.updateScore(uid,score,function(err,rows) {
+				User.updateScore(uid,score,logOptions,function(err,rows) {
 					if(rows) {
 						res.send({'message':'success'});
 					}
@@ -628,8 +634,14 @@ module.exports = function(app) {
 								//给成员加积分
 								User.getUserByUid(uid,function(err,user) {
 									if(!err) {
+										var logOptions = {
+											'name' : user['name'],
+											'uid' : uid,
+											'score' : score,
+											'type' : 1 //日报
+										}
 										score = (+user['score']) + (+score);
-										User.updateScore(uid,score,function(err,rows) {
+										User.updateScore(uid,score,logOptions,function(err,rows) {
 											if(!err) {
 												res.send({'message':'success'});
 											}
@@ -647,8 +659,14 @@ module.exports = function(app) {
 								//给成员加积分
 								User.getUserByUid(uid,function(err,user) {
 									if(!err) {
+										var logOptions = {
+											'name' : user['name'],
+											'uid' : uid,
+											'score' : score,
+											'type' : 1 //日报
+										}
 										score = (+user['score']) + (+score);
-										User.updateScore(uid,score,function(err,rows) {
+										User.updateScore(uid,score,logOptions,function(err,rows) {
 											if(!err) {
 												res.send({'message':'success'});
 											}
@@ -692,6 +710,36 @@ module.exports = function(app) {
 		});
 	})
 
+	//获取积分日志
+	app.get('/getLogScoreAjax',function(req,res) {
+		var pquery = querystring.parse(url.parse(req.url).query);
+		var curPage = pquery['curPage'];
+		var perPages = 5;
+		LogScore.getLogScoreCount(function(err,logCount) {
+			if(!err) {
+				console.log('获取积分日志');
+				console.log(logCount);
+				console.log('获取积分日志');
+				LogScore.getLogScoresByMore(curPage,perPages,function(err,logsArr) {
+					var dtotalPages = 1;
+					if(logCount % perPages == 0 ) {
+						dtotalPages = parseInt(logCount/perPages);
+					}else{
+						dtotalPages = parseInt(logCount/perPages) + 1;
+					}
+					for(var i=0,len=logsArr.length; i<len; i++) {
+						logsArr[i]['time'] = CommonJS.changeTime(logsArr[i]['time']);
+					}
+					var data = {
+						'page' : curPage,
+						'totalPages' : dtotalPages,
+						'data' : logsArr,
+					}
+					res.send(data);
+				});
+			}
+		});
+	});
 
 
 };
