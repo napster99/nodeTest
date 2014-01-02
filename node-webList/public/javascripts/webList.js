@@ -5,17 +5,22 @@
 
 $(function() {
   var ui = {
-    $startPassBtn : $('button[name=startPassBtn]'),
+    // $startPassBtn : $('button[name=startPassBtn]'),
+    // $seeDailyBtn  : $('a[name=seeDaily]'),
     $passBtn : $('#passBtn'),
     $unPassBtn : $('#unPassBtn'),
-    $backBtn : $('#backBtn'),
+    $backBtn : $('button[name=backBtn]'),
     $msgCon : $('#msgCon'),
+    $msgSeeCon : $('#msgSeeCon'),
     $msgList : $('#msgList'),
     $msgDetail : $('#msgDetail'),
     $reviews : $('#reviews'),
     $score : $('#score'),
     $logPagina : $('#logPagina'),
-    $logContent : $('#logContent')
+    $logContent : $('#logContent'),
+    $dailyStatus : $('#dailyStatus'),
+    $dailyCon    : $('#dailyCon'),
+    $msgSeeDetail : $('#msgSeeDetail')
   }
 
   var Page = {
@@ -25,32 +30,37 @@ $(function() {
       this.addEventListener();
       this.initJsChart();
       this.getLogScoreAjax();
+      this.getDailyListByStatus(1);
     },
     view : function() {
 
-
-
-      
 
         
     },
     addEventListener : function() {
       var self = this;
-      ui.$startPassBtn.on('click','',function() {
+
+      $(document).on('click','button[name=startPassBtn]',function() {
         var mid = $(this).attr('mid');
         self.getDailyDetail(mid);
-      });
+      })
+
+      $(document).on('click','a[name=seeDaily]',function() {
+        var mid = $(this).attr('mid');
+        self.getDailySeeDetail(mid);
+      })
       //通过
       ui.$passBtn.on('click','',function() {
         var mid = ui.$msgDetail.attr('mid');
         var uid = ui.$msgDetail.attr('uid');
         var reviews = ui.$reviews.val().replace(/\s*/g,'');
         var score = ui.$score.val();
-        if(!/^[0-9]*[1-9][0-9]*$/.test(score)) {
-          alert('请输入正整数的积分！');
+        if(!/^[0-9]*[0-9][0-9]*$/.test(score)) {
+          alert('请输入整数的积分！');
           ui.$score.val('').focus();
           return;
         }
+
         self.changeMessageStatus(mid,'passed',uid,reviews,score);
       });
       //不通过
@@ -64,8 +74,16 @@ $(function() {
       //返回列表
       ui.$backBtn.on('click','',function() {
         ui.$msgDetail.hide();
+        ui.$msgSeeDetail.hide();
         ui.$msgList.show();
       })
+
+
+      //日报删选条件
+      ui.$dailyStatus.on('change','',function() {
+        var status = this.value;
+        self.getDailyListByStatus(status);
+      });
     },
 
     changeMessageStatus : function(mid,status,uid,reviews,score) {
@@ -75,7 +93,6 @@ $(function() {
         'type' : 'POST',
         'data' : {mid : mid,status : status ,uid : uid,reviews:reviews,score:score},
         'success' : function(data) {
-          console.log(data)
           if(data['message'] == 'success') {
             window.location.href = window.location.href;
           }
@@ -103,6 +120,7 @@ $(function() {
       }
       $.ajax(options);
     },
+
     renderList : function(data) {
       var html = '',uname = data['uname'],message = data['message'];
       html += '<h3>'+message['mtitle']+'</h3>'
@@ -189,7 +207,6 @@ $(function() {
         'type' : 'GET',
         'data' : {curPage : curPage||1},
         'success' : function(data) {
-          console.log(data)
           if(data['data'].length > 0) {
             self.renderPagi(data['page'],data['totalPages']);
             self.renderLogScoreList(data['data']);  
@@ -211,11 +228,88 @@ $(function() {
         +'<td>'+data[i]['name']+'</td>'
         +'<td>通过'+CommonJS.logsType[data[i]['type']]+'</td>'
         +'<td>'+data[i]['score']+'分</td>'
-        +'<td>'+CommonJS.changeTime(data[i]['time'],'yyyy-MM-dd HH:mm:ss')+'</td>'
+        +'<td>'+data[i]['time']+'</td>'
         +'</tr>';
       }
       ui.$logContent.html(html);
+    },
+
+    getDailyListByStatus : function(status) {
+      var self = this;
+      var options = {
+        'url' : '/getDailyListByStatus',
+        'dataType' : 'json',
+        'type' : 'GET',
+        'data' : {status : status},
+        'success' : function(data) {
+          self.renderDailyList(data,status);
+        },
+        'error' : function(err) {
+          
+        }
+      }
+      $.ajax(options);
+    },
+
+    renderDailyList : function(data,status) {
+      var html = '';
+      if(data.length == 0) {
+         ui.$dailyCon.html('<tr><td colspan="5">暂无相关日报</td></tr>');
+         return;
+      }
+      for(var i=0; i<data.length; i++) {
+        html += '<tr>'
+        +'<td>'+data[i]['name']+'</td>'
+        +'<td>'+data[i]['mtitle']+'</td>'
+        +'<td>'+data[i]['mtime']+'</td>';
+        if(data[i]['pass'] == 'waiting') {
+          html +='<td><button name="startPassBtn"  type="button" class="btn btn-success" mid="'+data[i]['_id']+'">开始审核</button></td>'
+        +'</tr>';
+        }else{
+          html +='<td><a href="javascript:;" name="seeDaily" mid="'+data[i]['_id']+'" class="btn btn-success">点击查看</a></td>'
+        +'</tr>';
+        }
+      }
+      ui.$dailyCon.html(html);
+    },
+
+    getDailySeeDetail : function(mid) {
+      var self = this;
+      var options = {
+        'url' : '/getDailyDetailForPass',
+        'dataType' : 'json',
+        'type' : 'GET',
+        'data' : {mid : mid },
+        'success' : function(data) {
+          self.renderSeeList(data);
+        },
+        'error' : function(err) {
+          console.log(err)
+        }
+      }
+      $.ajax(options);
+    },
+
+    renderSeeList : function(data) {
+      var html = '',uname = data['uname'],message = data['message'];
+      html += '<h3>'+message['mtitle']+'</h3>'
+      +'<hr>'
+      +'<div class="topic_content"> '
+      +'    <div class="well"> '+message['mcontent'] + '</div>'
+      +'</div>'
+      +'<hr>'
+      +'<div class="changes"> '
+      +'     <span class="col_fade"> '
+      +'          <a class="dark" href="javascript:;">'+uname+'</a> 在 '+message['mtime']+' 发布 '
+      +'     </span>'
+      +'</div>';
+      ui.$msgSeeCon.html(html);
+      ui.$msgList.hide();
+      ui.$msgDetail.hide();
+      ui.$msgSeeDetail.show();
     }
+
+
   }
 
   Page.init();

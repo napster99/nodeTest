@@ -7,75 +7,38 @@
 			<%- include sidebar %>
 		</div>
 		<div id="content">
-		<div class="panel">
-			<div class="header">
-				<ul class="breadcrumb">
-					<li><a href="/">主页</a><span class="divider">/</span></li>
-					<li class="active">snoopy</li>
-				</ul>
-			</div>
-			<div class="inner userinfo">
-				<div class="user_big_avatar">
-					<img src="http://gravatar.qiniudn.com/avatar/1fe5c803a92e0a808a42d0117167275f?size=48" class="user_avatar" title="snoopy">
-				</div>
-				<a class="dark">snoopy</a>
-				<div class="col_fade">
-					<span>
-						<img src="http://cnodejs.qiniudn.com/public/images/cert_icon&amp;16.png">
-						1220 积分
-					</span>
-				</div>
-				<p class="col_fade" style="margin:12px 5px 0;">于 2011-7-21 12:40 加入 BF前端社区</p>
-				
-			</div>
-		</div>
 			<div class="panel">
 				<div class="header">
-					<span class="col_fade">最近发布话题</span>
+					<ul class="breadcrumb">
+						<li><a href="/">主页</a><span class="divider">/</span></li>
+						<li class="active"><%= otheruser.name%></li>
+					</ul>
 				</div>
-				<div class="cell">
-		  <div class="user_avatar block">
-		      <a href="/user/snoopy">
-		        <img src="http://gravatar.qiniudn.com/avatar/ba5cfa8ed415cdd50b556a9482c696e9?s=48" title="snoopy">
-		      </a>
-		  </div>
-		  <div class="block count">
-		    <a href="/topic/5293550ca6957a08096508fb" title="回复数">0</a>/<span title="点击数">45</span>
-		  </div>
-		  <div class="topic_wrap">
-		    <a class="" href="/topic/5293550ca6957a08096508fb">
-		      Node.js http 管道拒绝服务漏洞
-		    </a>
-		  </div>
-		    <div class="last_time">1 小时前</div>
-		</div>
-				<div class="cell more">
-					<a class="dark" href="/user/snoopy/topics">查看更多»</a>
+				<div class="inner userinfo">
+					<div class="well">
+						<span>手机号：</span>
+						<span><%= otheruser.mobile%></span>
+					</div>
+					<div class="well">
+						<span>电子邮件：</span>
+						<span><%= otheruser.email %></span>
+					</div>
+					<div class="well">
+						<span>个人主页：</span>
+						<a href="<%= otheruser.url%>" target="_blank"><%= otheruser.url %></a>
+					</div>
+					
+					<div class="well">
+						<span>个人技能：</span>
+						<span><%= otheruser.profile %></span>
+					</div>
+					<div class="well">
+						<span>微博地址：</span>
+						<span><%= otheruser.weibo %></span>
+					</div>
+
+					<p class="col_fade" style="margin:12px 5px 0;">于 2011-7-21 12:40 加入 BF前端社区</p>
 				</div>
-			</div>
-			<div class="panel"> 
-				<div class="header"> 
-					<span class="col_fade">最近参与话题</span> 
-				</div> 
-				<div class="cell"> 
-		  <div class="user_avatar block"> 
-		      <a href="/user/snoopy"> 
-		        <img src="http://gravatar.qiniudn.com/avatar/ba5cfa8ed415cdd50b556a9482c696e9?s=48" title="snoopy"> 
-		      </a> 
-		  </div> 
-		  <div class="block count"> 
-		    <a href="/topic/5293550ca6957a08096508fb" title="回复数">0</a>/<span title="点击数">45</span> 
-		  </div> 
-		  <div class="topic_wrap"> 
-		    <a class="" href="/topic/5293550ca6957a08096508fb"> 
-		      Node.js http 管道拒绝服务漏洞 
-		    </a> 
-		  </div> 
-		    <div class="last_time">1 小时前</div> 
-		</div> 
-				<div class="cell more"> 
-					<a class="dark" href="/user/snoopy/topics">查看更多»</a> 
-				</div> 
 			</div>
 		</div>
 	</div>

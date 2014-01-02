@@ -6,13 +6,17 @@ var mongoose = dbObj.mongoose
 
 var LogScore = require('./logs');
 
-
 var userSchema = new Schema({
-  name:  String,
-  password: String,
-  role:   String,
-  mobile : String,
-  uid    : String,
+  name:  String,    //姓名
+  password: String,  //密码
+  role:   String,    //角色
+  mobile : {type:String,default:''},   //手机号码
+  uid    : String,   //uid
+  email : {type:String,default:''},    //邮件
+  url : {type:String,default:''},    //个人主页
+  signature : {type:String,default:''},    //个性签名
+  profile : {type:String,default:''},    //个人简介
+  weibo : {type:String,default:''},    //微博
   score : {type:Number,default : 0},
   flag : {
   	sign : {type:String,default:''},
@@ -74,42 +78,42 @@ userSchema.static('getUsernameByUid',function(uid,users) {
 
 //通过uid获取User对象
 userSchema.static('getUserByUid', function(uid,callback) {
+	console.log(uid);
 	return this.findOne({ "_id" :  uid },function(err,user) {
+		console.log(user)
 		callback(err,user);
 	})
 });
 
 
 //更新积分
-userSchema.static('updateScore',function(uid,score,logOptions,callback) {
+userSchema.static('updateScore',function(uid,score,callback) {
 
-		// name:  String,
-  // uid: String,
-  // role:   String,
-  // time : {type:Date,default:Date.now},
-  // score : {type:Number,default : 0},
-  // type : {type:Number,default : 1}    //1:日报  2:周报  3:签到    ...
+  return this.findOneAndUpdate({ "_id" : uid }, { score: score, 'flag.sign': (new Date).format('yyyy-MM-dd') },  function(err,user) {
+    callback(err,user);
+  })
+});
 
 
-	var logScore = new LogScore({
-		name : logOptions['name'],
-		uid : logOptions['uid'],
-		score : logOptions['score'],
-		type : logOptions['type']
-	});
-	// console.log('===================')
-	// console.log(LogScore)
-	// console.log('===================')
+//更新积分Admin
+userSchema.static('updateScoreAdmin',function(uid,score,logOptions,callback) {
 
-	LogScore.saveLogScore(logScore,function(err,data) {
-		if(!err) {
-			console.log('日志已经写入...'+data)
-		}
-	});
-	
-	return this.findOneAndUpdate({ "_id" : uid }, { score: score },  function(err,user) {
-			callback(err,user);
-		})
+        var logScore = new LogScore({
+                name : logOptions['name'],
+                uid : logOptions['uid'],
+                score : logOptions['score'],
+                type : logOptions['type']
+        });
+
+        LogScore.saveLogScore(logScore,function(err,data) {
+                if(!err) {
+                        console.log('日志已经写入...'+data)
+                }
+        });
+        
+        return this.findOneAndUpdate({ "_id" : uid }, { score: score },  function(err,user) {
+                        callback(err,user);
+                })
 });
 
 
@@ -126,6 +130,17 @@ userSchema.static('changeSignStatus', function(uid,callback) {
 userSchema.static('getRanking',function(callback) {
 	return this.find().sort({'score':-1}).exec(callback);;
 });
+
+
+//更新个人信息
+userSchema.static('updateUser',function(uid,user,callback) {
+	
+	return this.findOneAndUpdate({ "_id" : uid }, {'name':user.name, 'mobile': user.mobile,'email':user.email,'url':user.url,'signature' : user.signature,'profile':user.profile,'weibo':user.weibo },  function(err,user) {
+			callback(err,user);
+		});
+});
+
+
 
 
 var User = mongoose.model('User', userSchema);

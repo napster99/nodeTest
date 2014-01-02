@@ -27,6 +27,12 @@ $(function(){
 		case '/webList':
 			showWhich($('li[name=webList]'));
 			break;
+		case '/setting':
+			showWhich($('li[name=setting]'));
+			break;
+		case '/changelog':
+			showWhich($('li[name=changelog]'));
+			break;
 		default:
 			$('ul[name=common]').find('li.active').removeClass('active');
 	}
