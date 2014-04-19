@@ -1,5 +1,5 @@
 var canvas = document.getElementById('mask');
-var curPoint = 0;
+var curPoint = $('#signStatus').val();
 var scratchCard = {
     startX : 0,
     startY : 0,
@@ -82,7 +82,7 @@ function gameOver(){
     $('#mask').off('mousemove.prize mousedown.prize');
     $(document).off('mouseup.prize');
     $('#mask').fadeOut(300);
-    $('#againBtn').attr('point',curPoint).show();
+    // $('#againBtn').attr('point',curPoint).show();
 }
 //gameStart
 function gameStart(){
@@ -131,7 +131,6 @@ function creatInfo(){
     var random = parseInt (r * 30);
     // 获得积分数
     var point = parseInt (r * 10);
-    curPoint = point;
     switch(random){
         case 0:
             var h = '男人忽悠女人，叫调戏；女人忽悠男人，叫勾引；男女相互忽悠，叫爱情。';
@@ -230,5 +229,5 @@ function creatInfo(){
             var h ='谢谢参与！';
             break;
     }
-    $('#sCardInfo').html(h+'<br>恭喜你获得<span>  '+point+'   </span>积分！');
+    $('#sCardInfo').html(h+'<br>恭喜你获得<span>  '+ curPoint +'   </span>积分！');
 }
